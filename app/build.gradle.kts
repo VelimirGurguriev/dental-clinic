@@ -22,6 +22,10 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
+    buildFeatures {
+        viewBinding = true
+    }
+
     buildTypes {
         release {
             isMinifyEnabled = false
@@ -43,10 +47,11 @@ dependencies {
     implementation(libs.androidx.constraintlayout)
     implementation(libs.androidx.core.ktx)
     implementation(libs.material)
-    testImplementation(libs.junit)
-    androidTestImplementation(libs.androidx.espresso.core)
-    androidTestImplementation(libs.androidx.junit)
 
     implementation(platform("com.google.firebase:firebase-bom:34.15.0"))
+
+    implementation("com.google.firebase:firebase-auth")
+    implementation("com.google.firebase:firebase-firestore")
+    implementation("com.google.firebase:firebase-storage")
     implementation("com.google.firebase:firebase-analytics")
 }
