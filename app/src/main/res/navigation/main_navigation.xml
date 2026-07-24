@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/mainNavigation"
+    app:startDestination="@id/homeFragment">
+
+    <fragment
+        android:id="@+id/homeFragment"
+        android:name="com.velimir_gurguriev.dentalclinic.fragments.HomeFragment"
+        android:label="Начало" />
+
+    <fragment
+        android:id="@+id/appointmentFragment"
+        android:name="com.velimir_gurguriev.dentalclinic.fragments.AppointmentFragment"
+        android:label="Часове" />
+
+    <fragment
+        android:id="@+id/dentistFragment"
+        android:name="com.velimir_gurguriev.dentalclinic.fragments.DentistsFragment"
+        android:label="Стоматолози" />
+
+    <fragment
+        android:id="@+id/userProfileFragment"
+        android:name="com.velimir_gurguriev.dentalclinic.fragments.UserProfileFragment"
+        android:label="Профил" />
+
+</navigation>

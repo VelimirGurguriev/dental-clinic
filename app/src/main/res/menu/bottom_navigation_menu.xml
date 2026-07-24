@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item
+        android:id="@+id/homeFragment"
+        android:title="Начало" />
+
+    <item
+        android:id="@+id/appointmentFragment"
+        android:title="Часове" />
+
+    <item
+        android:id="@+id/dentistFragment"
+        android:title="Стоматолози" />
+
+    <item
+        android:id="@+id/userProfileFragment"
+        android:title="Профил" />
+
+</menu>

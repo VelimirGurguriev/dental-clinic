@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/main"
@@ -10,33 +11,36 @@
     <com.google.android.material.appbar.MaterialToolbar
         android:id="@+id/topAppBar"
         android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="1.0"
+        android:layout_height="?attr/actionBarSize"
+        app:title="DentalClinic"
+        app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
-
-    <TextView
-        android:id="@+id/textView"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="DentalClinic"
-        app:layout_constraintBottom_toBottomOf="@+id/topAppBar"
-        app:layout_constraintEnd_toEndOf="@+id/topAppBar"
-        app:layout_constraintHorizontal_bias="0.498"
-        app:layout_constraintStart_toStartOf="@id/topAppBar"
-        app:layout_constraintTop_toTopOf="@+id/topAppBar"
-        app:layout_constraintVertical_bias="0.555" />
+        app:layout_constraintEnd_toEndOf="parent" />
 
     <androidx.fragment.app.FragmentContainerView
-        android:id="@+id/fragmentContainer"
+        android:id="@+id/navHostFragment"
+        android:name="androidx.navigation.fragment.NavHostFragment"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.0"
-        app:layout_constraintStart_toStartOf="parent"
+        app:defaultNavHost="true"
+        app:navGraph="@navigation/main_navigation"
+        tools:layout="@layout/fragment_home"
         app:layout_constraintTop_toBottomOf="@id/topAppBar"
-        app:layout_constraintVertical_bias="0.0" />
+        app:layout_constraintBottom_toTopOf="@id/bottomNavigation"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+    <com.google.android.material.bottomnavigation.BottomNavigationView
+        android:id="@+id/bottomNavigation"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:background="#2F5D62"
+        app:itemIconTint="@android:color/white"
+        app:itemTextColor="@android:color/white"
+        app:labelVisibilityMode="labeled"
+        app:menu="@menu/bottom_navigation_menu"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

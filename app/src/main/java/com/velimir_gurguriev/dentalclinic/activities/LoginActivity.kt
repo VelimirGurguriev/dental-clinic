@@ -4,6 +4,7 @@ import android.content.Intent
 import android.os.Bundle
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import com.velimir_gurguriev.dentalclinic.MainActivity
 import com.velimir_gurguriev.dentalclinic.databinding.ActivityLoginBinding
 import com.velimir_gurguriev.dentalclinic.models.forms.LoginForm
 import com.velimir_gurguriev.dentalclinic.repositories.AuthRepository
@@ -53,7 +54,7 @@ class LoginActivity : AppCompatActivity() {
             form = form,
             onSuccess = {
                 showMessage("Успешен вход.")
-                startActivity(Intent(this, HomeScreen::class.java))
+                startActivity(Intent(this, MainActivity::class.java))
                 finish()
             },
             onFailure = { exception ->
