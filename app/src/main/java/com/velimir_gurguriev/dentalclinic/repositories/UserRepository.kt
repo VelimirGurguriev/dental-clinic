@@ -22,4 +22,25 @@ class UserRepository {
                 onFailure(exception)
             }
     }
+
+    fun getCurrentUser(
+        uid: String,
+        onSuccess: (User) -> Unit,
+        onFailure: (Exception) -> Unit
+    ) {
+
+        database.collection("users")
+            .document(uid)
+            .get()
+            .addOnSuccessListener {
+
+                val user = it.toObject(User::class.java)
+
+                if (user != null)
+                    onSuccess(user)
+
+            }
+            .addOnFailureListener(onFailure)
+
+    }
 }
