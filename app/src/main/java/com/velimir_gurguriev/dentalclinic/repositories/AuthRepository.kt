@@ -41,4 +41,8 @@ class AuthRepository {
                 onFailure(exception)
             }
     }
+
+    fun logout() {
+        auth.signOut()
+    }
 }

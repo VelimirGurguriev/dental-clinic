@@ -36,7 +36,7 @@ class RegisterActivity : AppCompatActivity() {
     }
 
     private fun setupClickListeners() {
-        binding.resetPasswordButton.setOnClickListener {
+        binding.registerButton.setOnClickListener {
             handleRegistration()
         }
 

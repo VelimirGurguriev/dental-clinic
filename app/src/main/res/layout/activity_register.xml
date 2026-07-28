@@ -7,7 +7,6 @@
     android:layout_height="match_parent"
     tools:context=".activities.RegisterActivity">
 
-
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -15,7 +14,16 @@
         android:padding="24dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        tools:layout_editor_absoluteX="0dp">
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="24dp"
+            android:text="Регистрация"
+            android:textSize="26sp"
+            android:textStyle="bold" />
 
         <com.google.android.material.textfield.TextInputLayout
             android:layout_width="match_parent"
@@ -38,7 +46,8 @@
                 android:id="@+id/emailInputField"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:hint="Имейл" />
+                android:hint="Имейл"
+                android:inputType="textEmailAddress" />
 
         </com.google.android.material.textfield.TextInputLayout>
 
@@ -57,16 +66,15 @@
 
         </com.google.android.material.textfield.TextInputLayout>
 
-
         <TextView
             android:id="@+id/accountTypeTextView"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Регистрация като:"
-            android:textStyle="bold"
-            android:textSize="14sp"
             android:layout_marginTop="16dp"
-            android:layout_marginBottom="8dp"/>
+            android:layout_marginBottom="8dp"
+            android:text="Регистрация като:"
+            android:textSize="14sp"
+            android:textStyle="bold" />
 
         <RadioGroup
             android:id="@+id/accountTypeRadioGroup"
@@ -78,18 +86,18 @@
                 android:id="@+id/patientRadioButton"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Пациент"/>
+                android:text="Пациент" />
 
             <RadioButton
                 android:id="@+id/dentistRadioButton"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Зъболекар"/>
+                android:text="Стоматолог" />
 
         </RadioGroup>
 
         <Button
-            android:id="@+id/resetPasswordButton"
+            android:id="@+id/registerButton"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="24dp"
@@ -99,11 +107,9 @@
             android:id="@+id/loginButton"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="24dp"
+            android:layout_marginTop="16dp"
             android:text="Вече имате профил? Към вход" />
 
-
     </LinearLayout>
-
 
 </androidx.constraintlayout.widget.ConstraintLayout>
