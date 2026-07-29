@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item
+        android:id="@+id/homeFragment"
+        android:icon="@drawable/navigation_home_icon"
+        android:title="Начало" />
+
+    <item
+        android:id="@+id/appointmentFragment"
+        android:icon="@drawable/navigation_appointment_icon"
+        android:title="Часове" />
+
+    <item
+        android:id="@+id/patientRequestsFragment"
+        android:icon="@drawable/navigation_dentists_icon"
+        android:title="Пациенти" />
+
+    <item
+        android:id="@+id/userProfileFragment"
+        android:icon="@drawable/navigation_user_icon"
+        android:title="Профил" />
+
+</menu>

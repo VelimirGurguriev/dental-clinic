@@ -41,4 +41,9 @@
         android:name="com.velimir_gurguriev.dentalclinic.fragments.UserProfileFragment"
         android:label="Профил" />
 
+    <fragment
+        android:id="@+id/patientRequestsFragment"
+        android:name="com.velimir_gurguriev.dentalclinic.fragments.PatientRequestsFragment"
+        android:label="Заявки" />
+
 </navigation>
