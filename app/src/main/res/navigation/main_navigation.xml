@@ -17,7 +17,24 @@
     <fragment
         android:id="@+id/dentistFragment"
         android:name="com.velimir_gurguriev.dentalclinic.fragments.DentistsFragment"
-        android:label="Стоматолози" />
+        android:label="Стоматолози">
+
+        <action
+            android:id="@+id/action_dentistFragment_to_dentistDetailsFragment"
+            app:destination="@id/dentistDetailsFragment" />
+
+    </fragment>
+
+    <fragment
+        android:id="@+id/dentistDetailsFragment"
+        android:name="com.velimir_gurguriev.dentalclinic.fragments.DentistDetailsFragment"
+        android:label="Данни за стоматолог">
+
+        <argument
+            android:name="dentistUid"
+            app:argType="string" />
+
+    </fragment>
 
     <fragment
         android:id="@+id/userProfileFragment"

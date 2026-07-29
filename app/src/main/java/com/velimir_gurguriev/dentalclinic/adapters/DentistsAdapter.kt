@@ -7,7 +7,8 @@ import com.velimir_gurguriev.dentalclinic.databinding.DisplayDentistBinding
 import com.velimir_gurguriev.dentalclinic.models.User
 
 class DentistAdapter(
-    private val dentists: List<User>
+    private val dentists: List<User>,
+    private val onViewClick: (User) -> Unit
 ) : RecyclerView.Adapter<DentistAdapter.ViewHolder>() {
 
     class ViewHolder(
@@ -18,7 +19,6 @@ class DentistAdapter(
         parent: ViewGroup,
         viewType: Int
     ): ViewHolder {
-
         val binding = DisplayDentistBinding.inflate(
             LayoutInflater.from(parent.context),
             parent,
@@ -36,6 +36,10 @@ class DentistAdapter(
 
         holder.binding.dentistNameTextView.text = dentist.name
         holder.binding.dentistEmailTextView.text = dentist.email
+
+        holder.binding.viewDentistButton.setOnClickListener {
+            onViewClick(dentist)
+        }
     }
 
     override fun getItemCount(): Int {

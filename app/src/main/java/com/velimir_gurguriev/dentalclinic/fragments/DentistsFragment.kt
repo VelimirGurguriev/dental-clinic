@@ -6,9 +6,12 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.fragment.app.Fragment
+import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.velimir_gurguriev.dentalclinic.R
 import com.velimir_gurguriev.dentalclinic.adapters.DentistAdapter
 import com.velimir_gurguriev.dentalclinic.databinding.FragmentDentistsBinding
+import com.velimir_gurguriev.dentalclinic.models.User
 import com.velimir_gurguriev.dentalclinic.repositories.UserRepository
 import com.velimir_gurguriev.dentalclinic.services.DentistsService
 
@@ -55,10 +58,12 @@ class DentistsFragment : Fragment() {
     }
 
     private fun loadDentists() {
-        dentistsService.loadDentists(
+        dentistsService.getAllDentists(
             { dentists ->
                 binding.dentistsRecyclerView.adapter =
-                    DentistAdapter(dentists)
+                    DentistAdapter(dentists) { dentist ->
+                        openDentistDetails(dentist)
+                    }
             },
             {
                 showMessage("Failed to load dentists.")
@@ -72,5 +77,17 @@ class DentistsFragment : Fragment() {
             message,
             Toast.LENGTH_SHORT
         ).show()
+    }
+
+    private fun openDentistDetails(dentist: User) {
+
+        val bundle = Bundle().apply {
+            putString("dentistUid", dentist.uid)
+        }
+
+        findNavController().navigate(
+            R.id.action_dentistFragment_to_dentistDetailsFragment,
+            bundle
+        )
     }
 }

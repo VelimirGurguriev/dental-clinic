@@ -43,7 +43,7 @@ class EditProfileActivity : AppCompatActivity() {
             return
         }
 
-        userRepository.getCurrentUser(
+        userRepository.getUserById(
             currentUser.uid,
             { user ->
                 binding.nameInputField.setText(user.name)

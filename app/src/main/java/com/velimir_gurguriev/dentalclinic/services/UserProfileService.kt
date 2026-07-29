@@ -14,7 +14,7 @@ class UserProfileService(
         onSuccess: (User) -> Unit,
         onFailure: (Exception) -> Unit
     ) {
-        repository.getCurrentUser(
+        repository.getUserById(
             uid = uid,
             onSuccess = onSuccess,
             onFailure = onFailure

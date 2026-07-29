@@ -23,7 +23,7 @@ class UserRepository {
             }
     }
 
-    fun getCurrentUser(
+    fun getUserById(
         uid: String,
         onSuccess: (User) -> Unit,
         onFailure: (Exception) -> Unit
@@ -43,6 +43,8 @@ class UserRepository {
             .addOnFailureListener(onFailure)
 
     }
+
+
 
     fun getAllDentists(
         onSuccess: (List<User>) -> Unit,

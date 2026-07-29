@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="16dp">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Профил на стоматолог"
+        android:textSize="24sp"
+        android:textStyle="bold"
+        android:layout_marginBottom="24dp"/>
+
+    <!-- Name -->
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Име"
+        android:textStyle="bold"/>
+
+    <TextView
+        android:id="@+id/dentistNameTextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Зарежда се..."
+        android:layout_marginBottom="16dp"/>
+
+    <!-- Email -->
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="E-mail"
+        android:textStyle="bold"/>
+
+    <TextView
+        android:id="@+id/dentistEmailTextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Зарежда се..."
+        android:layout_marginBottom="16dp"/>
+
+    <!-- Account Type -->
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Вид потребител"
+        android:textStyle="bold"/>
+
+    <TextView
+        android:id="@+id/dentistRoleTextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Зарежда се..."
+        android:layout_marginBottom="24dp"/>
+
+    <Button
+        android:id="@+id/requestPatientButton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Изпрати заявка за пациент"/>
+
+</LinearLayout>

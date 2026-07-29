@@ -22,5 +22,16 @@ class MainActivity : AppCompatActivity() {
         val navController = navHostFragment.navController
 
         binding.bottomNavigation.setupWithNavController(navController)
+
+        navController.addOnDestinationChangedListener { _, destination, _ ->
+
+            when (destination.id) {
+
+                R.id.dentistDetailsFragment ->
+                    binding.bottomNavigation.menu
+                        .findItem(R.id.dentistFragment)
+                        .isChecked = true
+            }
+        }
     }
 }
