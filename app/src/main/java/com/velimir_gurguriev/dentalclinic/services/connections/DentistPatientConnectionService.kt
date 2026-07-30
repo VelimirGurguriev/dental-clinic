@@ -134,4 +134,20 @@ class DentistPatientConnectionService(
 
         return connectionRepository.rejectRequest(connectionId)
     }
+
+    fun getApprovedPatientsForDentist(
+        dentistId: String
+    ): Task<QuerySnapshot> {
+
+        if (dentistId.isBlank()) {
+            return Tasks.forException(
+                IllegalArgumentException(
+                    "Dentist ID cannot be empty."
+                )
+            )
+        }
+
+        return connectionRepository
+            .getApprovedPatientsForDentist(dentistId)
+    }
 }

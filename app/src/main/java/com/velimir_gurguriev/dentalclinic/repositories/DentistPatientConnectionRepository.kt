@@ -66,6 +66,18 @@ class DentistPatientConnectionRepository(
             .get()
     }
 
+    fun getApprovedPatientsForDentist(
+        dentistId: String
+    ): Task<QuerySnapshot> {
+        return connectionsCollection
+            .whereEqualTo(DENTIST_ID_FIELD, dentistId)
+            .whereEqualTo(
+                STATUS_FIELD,
+                DentistPatientStatus.APPROVED.name
+            )
+            .get()
+    }
+
     fun approveRequest(
         connectionId: String
     ): Task<Void> {
