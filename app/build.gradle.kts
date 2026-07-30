@@ -51,6 +51,8 @@ dependencies {
     implementation(libs.androidx.navigation.ui.ktx)
     implementation(libs.material)
 
+    implementation("com.applandeo:material-calendar-view:1.9.0-rc03")
+
     implementation(platform("com.google.firebase:firebase-bom:34.15.0"))
 
     implementation("com.google.firebase:firebase-auth")

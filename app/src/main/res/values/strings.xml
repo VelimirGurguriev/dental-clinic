@@ -2,4 +2,35 @@
     <string name="app_name">DentalClinic</string>
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
+
+    <string name="material_calendar_monday">П</string>
+    <string name="material_calendar_tuesday">В</string>
+    <string name="material_calendar_wednesday">С</string>
+    <string name="material_calendar_thursday">Ч</string>
+    <string name="material_calendar_friday">П</string>
+    <string name="material_calendar_saturday">С</string>
+    <string name="material_calendar_sunday">Н</string>
+
+    <string-array name="material_calendar_months_array">
+        <item>Януари</item>
+        <item>Февруари</item>
+        <item>Март</item>
+        <item>Април</item>
+        <item>Май</item>
+        <item>Юни</item>
+        <item>Юли</item>
+        <item>Август</item>
+        <item>Септември</item>
+        <item>Октомври</item>
+        <item>Ноември</item>
+        <item>Декември</item>
+    </string-array>
+
+    <string name="material_calendar_today_button">Днес</string>
+    <string name="material_calendar_positive_button">Потвърди</string>
+    <string name="material_calendar_negative_button">Отказ</string>
+
+    <color name="slot_normal">#FFFFFF</color>
+    <color name="slot_selected">#90CAF9</color>
+    <color name="slot_published">#81C784</color>
 </resources>

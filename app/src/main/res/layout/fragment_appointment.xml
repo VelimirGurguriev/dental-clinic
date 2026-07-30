@@ -1,14 +1,74 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
+<androidx.core.widget.NestedScrollView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".fragments.AppointmentFragment">
+    android:fillViewport="true">
 
-    <!-- TODO: Update blank fragment layout -->
-    <TextView
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:text="Appointment Fragment" />
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="20dp">
 
-</FrameLayout>
+        <TextView
+            android:id="@+id/appointmentTitleTextView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Добавяне на свободни часове"
+            android:textSize="24sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:text="Изберете дата"
+            android:textSize="18sp"
+            android:textStyle="bold" />
+
+        <com.applandeo.materialcalendarview.CalendarView
+            android:id="@+id/appointmentCalendarView"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            app:type="one_day_picker"
+            app:eventsEnabled="true" />
+
+        <TextView
+            android:id="@+id/selectedDateTextView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:text="Избрана дата:"
+            android:textSize="16sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="24dp"
+            android:text="Изберете свободни часове"
+            android:textSize="18sp"
+            android:textStyle="bold" />
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/appointmentSlotsRecyclerView"
+            android:layout_width="match_parent"
+            android:layout_height="348dp"
+            android:layout_marginTop="12dp"
+            android:nestedScrollingEnabled="false"
+            android:overScrollMode="never" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/createAppointmentSlotsButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:text="Добави свободни часове"
+            app:cornerRadius="8dp" />
+
+    </LinearLayout>
+
+</androidx.core.widget.NestedScrollView>

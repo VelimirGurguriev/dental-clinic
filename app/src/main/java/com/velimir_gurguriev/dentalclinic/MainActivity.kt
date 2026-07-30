@@ -9,7 +9,6 @@ import androidx.navigation.ui.setupWithNavController
 import com.google.firebase.auth.FirebaseAuth
 import com.velimir_gurguriev.dentalclinic.databinding.ActivityMainBinding
 import com.velimir_gurguriev.dentalclinic.repositories.UserRepository
-
 class MainActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMainBinding
