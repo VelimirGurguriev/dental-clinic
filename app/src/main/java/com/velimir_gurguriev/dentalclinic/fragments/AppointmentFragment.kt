@@ -7,11 +7,13 @@ import android.view.ViewGroup
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.GridLayoutManager
+import com.applandeo.materialcalendarview.CalendarDay
 import com.applandeo.materialcalendarview.EventDay
 import com.applandeo.materialcalendarview.listeners.OnDayClickListener
 import com.google.android.gms.tasks.Task
 import com.google.android.gms.tasks.Tasks
 import com.google.firebase.auth.FirebaseAuth
+import com.velimir_gurguriev.dentalclinic.R
 import com.velimir_gurguriev.dentalclinic.adapters.TimeSlotAdapter
 import com.velimir_gurguriev.dentalclinic.databinding.FragmentAppointmentBinding
 import com.velimir_gurguriev.dentalclinic.models.appointments.AppointmentStatus
@@ -87,6 +89,7 @@ class AppointmentFragment : Fragment() {
         binding.appointmentCalendarView.setMinimumDate(today)
         binding.appointmentCalendarView.setDate(today)
 
+        applyWeekendColors()
         updateSelectedDateText()
         loadPublishedSlots()
 
@@ -103,6 +106,45 @@ class AppointmentFragment : Fragment() {
         )
     }
 
+    private fun applyWeekendColors() {
+        val weekendDays = mutableListOf<CalendarDay>()
+
+        val startDate = Calendar.getInstance().apply {
+            add(Calendar.YEAR, -1)
+            clearTime(this)
+        }
+
+        val endDate = Calendar.getInstance().apply {
+            add(Calendar.YEAR, 5)
+            clearTime(this)
+        }
+
+        val currentDate = startDate.clone() as Calendar
+
+        while (!currentDate.after(endDate)) {
+            val dayOfWeek = currentDate.get(Calendar.DAY_OF_WEEK)
+
+            if (
+                dayOfWeek == Calendar.SATURDAY ||
+                dayOfWeek == Calendar.SUNDAY
+            ) {
+                weekendDays.add(
+                    CalendarDay(
+                        currentDate.clone() as Calendar
+                    ).apply {
+                        labelColor = R.color.calendar_weekend
+                    }
+                )
+            }
+
+            currentDate.add(Calendar.DAY_OF_MONTH, 1)
+        }
+
+        binding.appointmentCalendarView.setCalendarDays(
+            weekendDays
+        )
+    }
+
     private fun updateSelectedDate(eventDay: EventDay) {
         val calendar = eventDay.calendar.apply {
             clearTime(this)
@@ -116,6 +158,14 @@ class AppointmentFragment : Fragment() {
     private fun setupClickListeners() {
         binding.createAppointmentSlotsButton.setOnClickListener {
             createSelectedAppointmentSlots()
+        }
+
+        binding.selectAllSlotsButton.setOnClickListener {
+            timeSlotAdapter.selectAllAvailableSlots()
+        }
+
+        binding.deselectAllSlotsButton.setOnClickListener {
+            timeSlotAdapter.deselectAllSlots()
         }
     }
 
@@ -134,28 +184,8 @@ class AppointmentFragment : Fragment() {
             selectedDate = selectedDate
         )
             .addOnSuccessListener { appointmentSlots ->
-
-                val publishedStartTimes = appointmentSlots
-                    .filter { appointmentSlot ->
-                        appointmentSlot.status !=
-                                AppointmentStatus.CANCELLED.name
-                    }
-                    .map { appointmentSlot ->
-
-                        val calendar = Calendar.getInstance().apply {
-                            timeInMillis =
-                                appointmentSlot.startDateTime
-                        }
-
-                        Pair(
-                            calendar.get(Calendar.HOUR_OF_DAY),
-                            calendar.get(Calendar.MINUTE)
-                        )
-                    }
-                    .toSet()
-
-                timeSlotAdapter.markSlotsAsPublished(
-                    publishedStartTimes
+                timeSlotAdapter.updatePublishedSlots(
+                    appointmentSlots
                 )
             }
             .addOnFailureListener { exception ->

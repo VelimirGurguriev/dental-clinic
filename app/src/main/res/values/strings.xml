@@ -33,4 +33,7 @@
     <color name="slot_normal">#FFFFFF</color>
     <color name="slot_selected">#90CAF9</color>
     <color name="slot_published">#81C784</color>
+
+    <color name="calendar_other_month_days">#ADADAD</color>
+    <color name="calendar_weekend">#C62828</color>
 </resources>

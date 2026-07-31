@@ -7,7 +7,10 @@ import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.RecyclerView
 import com.velimir_gurguriev.dentalclinic.R
 import com.velimir_gurguriev.dentalclinic.databinding.DisplayTimeSlotBinding
+import com.velimir_gurguriev.dentalclinic.models.appointments.AppointmentSlot
+import com.velimir_gurguriev.dentalclinic.models.appointments.AppointmentStatus
 import com.velimir_gurguriev.dentalclinic.models.appointments.TimeSlotItem
+import java.util.Calendar
 import java.util.Locale
 
 class TimeSlotAdapter(
@@ -118,21 +121,59 @@ class TimeSlotAdapter(
         notifyDataSetChanged()
     }
 
-    fun markSlotsAsPublished(
-        publishedStartTimes: Set<Pair<Int, Int>>
+    fun updatePublishedSlots(
+        appointmentSlots: List<AppointmentSlot>?
     ) {
         timeSlots.forEach { timeSlot ->
-            val startTime = Pair(
-                timeSlot.startHour,
-                timeSlot.startMinute
-            )
+
+            val matchingAppointment =
+                appointmentSlots?.find { appointmentSlot ->
+
+                    val calendar = Calendar.getInstance().apply {
+                        timeInMillis = appointmentSlot.startDateTime
+                    }
+
+                    calendar.get(Calendar.HOUR_OF_DAY) ==
+                            timeSlot.startHour &&
+                            calendar.get(Calendar.MINUTE) ==
+                            timeSlot.startMinute
+                }
+
+            timeSlot.appointmentId =
+                matchingAppointment?.id
+
+            timeSlot.appointmentStatus =
+                matchingAppointment
+                    ?.status
+                    ?.let { status ->
+                        AppointmentStatus.valueOf(status)
+                    }
 
             timeSlot.isPublished =
-                publishedStartTimes.contains(startTime)
+                matchingAppointment != null &&
+                        matchingAppointment.status == AppointmentStatus.AVAILABLE.name
 
             if (timeSlot.isPublished) {
                 timeSlot.isSelected = false
             }
+        }
+
+        notifyDataSetChanged()
+    }
+
+    fun selectAllAvailableSlots() {
+        timeSlots.forEach { timeSlot ->
+            if (!timeSlot.isPublished) {
+                timeSlot.isSelected = true
+            }
+        }
+
+        notifyDataSetChanged()
+    }
+
+    fun deselectAllSlots() {
+        timeSlots.forEach { timeSlot ->
+            timeSlot.isSelected = false
         }
 
         notifyDataSetChanged()
