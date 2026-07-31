@@ -16,7 +16,8 @@
             android:id="@+id/appointmentTitleTextView"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Добавяне на свободни часове"
+            android:text="Управление на часове"
+            android:layout_marginBottom="12dp"
             android:textSize="24sp"
             android:textStyle="bold" />
 
@@ -24,6 +25,8 @@
             android:id="@+id/appointmentCalendarView"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            app:type="one_day_picker"
+            app:eventsEnabled="true"
             app:firstDayOfWeek="monday"
             app:anotherMonthsDaysLabelsColor="@color/calendar_other_month_days" />
 
@@ -37,11 +40,24 @@
             android:textStyle="bold" />
 
         <TextView
+            android:id="@+id/weekendMessageTextView"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:layout_marginBottom="20dp"
+            android:gravity="center"
+            android:text="Почивен ден"
+            android:textSize="22sp"
+            android:textStyle="bold"
+            android:visibility="gone" />
+
+        <TextView
+            android:id="@+id/selectTimeTitleTextView"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="24dp"
+            android:layout_marginTop="8dp"
             android:text="Изберете час"
-            android:textSize="18sp"
+            android:textSize="16sp"
             android:textStyle="bold" />
 
         <LinearLayout
@@ -81,6 +97,13 @@
             android:layout_marginTop="20dp"
             android:text="Добави час"
             app:cornerRadius="8dp" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/removeAppointmentSlotButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="Премахни час" />
 
     </LinearLayout>
 

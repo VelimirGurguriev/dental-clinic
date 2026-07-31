@@ -193,6 +193,18 @@ class AppointmentRepository {
             }
     }
 
+    fun cancelAppointmentSlot(
+        appointmentId: String
+    ): Task<Void> {
+
+        return appointmentSlotsCollection
+            .document(appointmentId)
+            .update(
+                STATUS_FIELD,
+                AppointmentStatus.CANCELLED.name
+            )
+    }
+
     companion object {
         private const val APPOINTMENT_SLOTS_COLLECTION =
             "appointmentSlots"

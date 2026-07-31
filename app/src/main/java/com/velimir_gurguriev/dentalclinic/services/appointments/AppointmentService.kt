@@ -59,6 +59,23 @@ class AppointmentService(
         )
     }
 
+    fun cancelAppointmentSlot(
+        appointmentId: String
+    ): Task<Void> {
+
+        if (appointmentId.isBlank()) {
+            return Tasks.forException(
+                IllegalArgumentException(
+                    "Липсва идентификатор на часа."
+                )
+            )
+        }
+
+        return appointmentRepository.cancelAppointmentSlot(
+            appointmentId
+        )
+    }
+
     fun getAvailableSlots(
         dentistId: String,
         startOfDay: Long,

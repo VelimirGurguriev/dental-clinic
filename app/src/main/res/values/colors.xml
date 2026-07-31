@@ -2,4 +2,9 @@
 <resources>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
+
+    <color name="slot_booked">#E6A23C</color>
+    <color name="slot_remove_selected">#FF9800</color>
+
+    <color name="calendar_selected_day">#2F5D62</color>
 </resources>

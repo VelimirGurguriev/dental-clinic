@@ -22,63 +22,106 @@ class TimeSlotAdapter(
     ) : RecyclerView.ViewHolder(binding.root) {
 
         fun bind(timeSlot: TimeSlotItem) {
-            val context = binding.root.context
-
             binding.timeSlotButton.text = formatTime(
                 timeSlot.startHour,
                 timeSlot.startMinute
             )
 
             when {
-                timeSlot.isPublished -> {
+                timeSlot.appointmentStatus ==
+                        AppointmentStatus.BOOKED -> {
+
                     binding.timeSlotButton.isEnabled = false
                     binding.timeSlotButton.isChecked = false
 
-                    binding.timeSlotButton.backgroundTintList =
-                        ColorStateList.valueOf(
-                            ContextCompat.getColor(
-                                context,
-                                R.color.slot_published
-                            )
-                        )
+                    setButtonColor(
+                        R.color.slot_booked
+                    )
+                }
+
+                timeSlot.appointmentStatus ==
+                        AppointmentStatus.AVAILABLE &&
+                        timeSlot.isSelectedForCancellation -> {
+
+                    binding.timeSlotButton.isEnabled = true
+                    binding.timeSlotButton.isChecked = true
+
+                    setButtonColor(
+                        R.color.slot_remove_selected
+                    )
+                }
+
+                timeSlot.appointmentStatus ==
+                        AppointmentStatus.AVAILABLE -> {
+
+                    binding.timeSlotButton.isEnabled = true
+                    binding.timeSlotButton.isChecked = false
+
+                    setButtonColor(
+                        R.color.slot_published
+                    )
                 }
 
                 timeSlot.isSelected -> {
                     binding.timeSlotButton.isEnabled = true
                     binding.timeSlotButton.isChecked = true
 
-                    binding.timeSlotButton.backgroundTintList =
-                        ColorStateList.valueOf(
-                            ContextCompat.getColor(
-                                context,
-                                R.color.slot_selected
-                            )
-                        )
+                    setButtonColor(
+                        R.color.slot_selected
+                    )
                 }
 
                 else -> {
                     binding.timeSlotButton.isEnabled = true
                     binding.timeSlotButton.isChecked = false
 
-                    binding.timeSlotButton.backgroundTintList =
-                        ColorStateList.valueOf(
-                            ContextCompat.getColor(
-                                context,
-                                R.color.slot_normal
-                            )
-                        )
+                    setButtonColor(
+                        R.color.slot_normal
+                    )
                 }
             }
 
             binding.timeSlotButton.setOnClickListener {
-                if (timeSlot.isPublished) {
+                val position = bindingAdapterPosition
+
+                if (position == RecyclerView.NO_POSITION) {
                     return@setOnClickListener
                 }
 
-                timeSlot.isSelected = !timeSlot.isSelected
+                when (timeSlot.appointmentStatus) {
+                    AppointmentStatus.AVAILABLE -> {
+                        timeSlot.isSelectedForCancellation =
+                            !timeSlot.isSelectedForCancellation
 
-                notifyItemChanged(bindingAdapterPosition)
+                        timeSlot.isSelected = false
+                    }
+
+                    AppointmentStatus.BOOKED -> {
+                        return@setOnClickListener
+                    }
+
+                    else -> {
+                        timeSlot.isSelected =
+                            !timeSlot.isSelected
+
+                        timeSlot.isSelectedForCancellation = false
+                    }
+                }
+
+                notifyItemChanged(position)
             }
+        }
+
+        private fun setButtonColor(
+            colorResource: Int
+        ) {
+            binding.timeSlotButton.backgroundTintList =
+                ColorStateList.valueOf(
+                    ContextCompat.getColor(
+                        binding.root.context,
+                        colorResource
+                    )
+                )
         }
     }
 
@@ -109,34 +152,48 @@ class TimeSlotAdapter(
 
     fun getSelectedSlots(): List<TimeSlotItem> {
         return timeSlots.filter { timeSlot ->
-            timeSlot.isSelected && !timeSlot.isPublished
+            timeSlot.isSelected &&
+                    timeSlot.appointmentStatus == null
+        }
+    }
+
+    fun getSelectedSlotsForCancellation(): List<TimeSlotItem> {
+        return timeSlots.filter { timeSlot ->
+            timeSlot.isSelectedForCancellation &&
+                    timeSlot.appointmentStatus ==
+                    AppointmentStatus.AVAILABLE &&
+                    !timeSlot.appointmentId.isNullOrBlank()
         }
     }
 
     fun clearSelection() {
         timeSlots.forEach { timeSlot ->
             timeSlot.isSelected = false
+            timeSlot.isSelectedForCancellation = false
         }
 
         notifyDataSetChanged()
     }
 
     fun updatePublishedSlots(
-        appointmentSlots: List<AppointmentSlot>?
+        appointmentSlots: List<AppointmentSlot>
     ) {
         timeSlots.forEach { timeSlot ->
 
             val matchingAppointment =
-                appointmentSlots?.find { appointmentSlot ->
+                appointmentSlots.find { appointmentSlot ->
 
                     val calendar = Calendar.getInstance().apply {
-                        timeInMillis = appointmentSlot.startDateTime
+                        timeInMillis =
+                            appointmentSlot.startDateTime
                     }
 
                     calendar.get(Calendar.HOUR_OF_DAY) ==
                             timeSlot.startHour &&
                             calendar.get(Calendar.MINUTE) ==
-                            timeSlot.startMinute
+                            timeSlot.startMinute &&
+                            appointmentSlot.status !=
+                            AppointmentStatus.CANCELLED.name
                 }
 
             timeSlot.appointmentId =
@@ -146,16 +203,17 @@ class TimeSlotAdapter(
                 matchingAppointment
                     ?.status
                     ?.let { status ->
-                        AppointmentStatus.valueOf(status)
+                        runCatching {
+                            AppointmentStatus.valueOf(status)
+                        }.getOrNull()
                     }
 
             timeSlot.isPublished =
-                matchingAppointment != null &&
-                        matchingAppointment.status == AppointmentStatus.AVAILABLE.name
+                timeSlot.appointmentStatus ==
+                        AppointmentStatus.AVAILABLE
 
-            if (timeSlot.isPublished) {
-                timeSlot.isSelected = false
-            }
+            timeSlot.isSelected = false
+            timeSlot.isSelectedForCancellation = false
         }
 
         notifyDataSetChanged()
@@ -163,8 +221,9 @@ class TimeSlotAdapter(
 
     fun selectAllAvailableSlots() {
         timeSlots.forEach { timeSlot ->
-            if (!timeSlot.isPublished) {
+            if (timeSlot.appointmentStatus == null) {
                 timeSlot.isSelected = true
+                timeSlot.isSelectedForCancellation = false
             }
         }
 
@@ -172,11 +231,7 @@ class TimeSlotAdapter(
     }
 
     fun deselectAllSlots() {
-        timeSlots.forEach { timeSlot ->
-            timeSlot.isSelected = false
-        }
-
-        notifyDataSetChanged()
+        clearSelection()
     }
 
     private fun formatTime(
