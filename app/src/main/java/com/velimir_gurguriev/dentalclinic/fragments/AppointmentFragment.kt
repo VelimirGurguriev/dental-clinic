@@ -1,11 +1,14 @@
 package com.velimir_gurguriev.dentalclinic.fragments
 
 import android.os.Bundle
+import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Toast
+import android.widget.FrameLayout
 import androidx.appcompat.app.AlertDialog
+import androidx.appcompat.content.res.AppCompatResources
+import androidx.core.view.ViewCompat
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.GridLayoutManager
 import com.applandeo.materialcalendarview.CalendarDay
@@ -602,11 +605,53 @@ class AppointmentFragment : Fragment() {
     private fun showMessage(
         message: String
     ) {
-        Snackbar.make(
+        val snackbar = Snackbar.make(
             binding.root,
             message,
             Snackbar.LENGTH_SHORT
-        ).show()
+        )
+
+        val snackbarView = snackbar.view
+
+        ViewCompat.setBackgroundTintList(
+            snackbarView,
+            null
+        )
+
+        snackbarView.background =
+            AppCompatResources.getDrawable(
+                requireContext(),
+                R.drawable.snackbar_background
+            )
+
+        val layoutParams =
+            snackbarView.layoutParams as FrameLayout.LayoutParams
+
+        layoutParams.gravity =
+            Gravity.TOP or Gravity.CENTER_HORIZONTAL
+
+        val horizontalMargin =
+            resources.getDimensionPixelSize(
+                R.dimen.snackbar_horizontal_margin
+            )
+
+        layoutParams.setMargins(
+            horizontalMargin,
+            resources.getDimensionPixelSize(
+                R.dimen.snackbar_top_margin
+            ),
+            horizontalMargin,
+            0
+        )
+
+        snackbarView.layoutParams = layoutParams
+
+        snackbarView.elevation =
+            resources.getDimension(
+                R.dimen.snackbar_elevation
+            )
+
+        snackbar.show()
     }
 
     companion object {

@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <dimen name="snackbar_horizontal_margin">16dp</dimen>
+
+    <dimen name="snackbar_top_margin">72dp</dimen>
+
+    <dimen name="snackbar_elevation">12dp</dimen>
+
+</resources>
