@@ -3,102 +3,89 @@ package com.velimir_gurguriev.dentalclinic.services.appointments
 import com.google.android.gms.tasks.Task
 import com.google.android.gms.tasks.Tasks
 import com.velimir_gurguriev.dentalclinic.models.appointments.AppointmentSlot
+import com.velimir_gurguriev.dentalclinic.models.appointments.TimeSlotItem
 import com.velimir_gurguriev.dentalclinic.repositories.AppointmentRepository
-import java.util.Calendar
+import com.velimir_gurguriev.dentalclinic.utils.appointments.AppointmentDateUtils
 
 class AppointmentService(
     private val appointmentRepository: AppointmentRepository
 ) {
 
-    fun createAppointmentSlot(
+    fun createAppointmentSlots(
         dentistId: String,
-        startDateTime: Long,
-        endDateTime: Long
+        selectedDate: Long,
+        timeSlots: List<TimeSlotItem>
     ): Task<Void> {
 
         if (dentistId.isBlank()) {
-            return Tasks.forException(
-                IllegalArgumentException(
-                    "Липсва идентификатор на стоматолога."
-                )
+            return createFailedTask(
+                "Липсва идентификатор на стоматолога."
             )
         }
 
-        if (startDateTime <= 0L || endDateTime <= 0L) {
-            return Tasks.forException(
-                IllegalArgumentException(
-                    "Невалидна дата или час."
-                )
+        if (selectedDate <= 0L) {
+            return createFailedTask(
+                "Невалидна избрана дата."
             )
         }
 
-        if (endDateTime <= startDateTime) {
-            return Tasks.forException(
-                IllegalArgumentException(
-                    "Крайният час трябва да бъде след началния час."
-                )
+        if (timeSlots.isEmpty()) {
+            return createFailedTask(
+                "Няма избрани часове за добавяне."
             )
         }
 
-        if (startDateTime <= System.currentTimeMillis()) {
-            return Tasks.forException(
-                IllegalArgumentException(
-                    "Не може да бъде добавен час в миналото."
+        val tasks = timeSlots.map { timeSlot ->
+
+            val startDateTime =
+                AppointmentDateUtils.createDateTime(
+                    date = selectedDate,
+                    hour = timeSlot.startHour,
+                    minute = timeSlot.startMinute
                 )
+
+            val endDateTime =
+                AppointmentDateUtils.createDateTime(
+                    date = selectedDate,
+                    hour = timeSlot.endHour,
+                    minute = timeSlot.endMinute
+                )
+
+            createAppointmentSlot(
+                dentistId = dentistId,
+                startDateTime = startDateTime,
+                endDateTime = endDateTime
             )
         }
 
-        val appointmentSlot = AppointmentSlot(
-            dentistId = dentistId,
-            startDateTime = startDateTime,
-            endDateTime = endDateTime
-        )
-
-        return appointmentRepository.createAppointmentSlot(
-            appointmentSlot
-        )
+        return Tasks.whenAll(tasks)
     }
 
-    fun cancelAppointmentSlot(
-        appointmentId: String
+    fun cancelAppointmentSlots(
+        timeSlots: List<TimeSlotItem>
     ): Task<Void> {
 
-        if (appointmentId.isBlank()) {
-            return Tasks.forException(
-                IllegalArgumentException(
-                    "Липсва идентификатор на часа."
-                )
+        val appointmentIds = timeSlots
+            .mapNotNull { timeSlot ->
+                timeSlot.appointmentId
+            }
+            .filter { appointmentId ->
+                appointmentId.isNotBlank()
+            }
+
+        if (appointmentIds.isEmpty()) {
+            return createFailedTask(
+                "Няма избрани часове за премахване."
             )
         }
 
-        return appointmentRepository.cancelAppointmentSlot(
-            appointmentId
-        )
-    }
-
-    fun getAvailableSlots(
-        dentistId: String,
-        startOfDay: Long,
-        endOfDay: Long,
-        onSuccess: (List<AppointmentSlot>) -> Unit,
-        onFailure: (Exception) -> Unit
-    ) {
-        if (dentistId.isBlank()) {
-            onFailure(
-                IllegalArgumentException(
-                    "Липсва идентификатор на стоматолога."
-                )
+        val tasks = appointmentIds.map { appointmentId ->
+            appointmentRepository.cancelAppointmentSlot(
+                appointmentId
             )
-            return
         }
 
-        appointmentRepository.getAvailableSlots(
-            dentistId = dentistId,
-            startOfDay = startOfDay,
-            endOfDay = endOfDay,
-            onSuccess = onSuccess,
-            onFailure = onFailure
-        )
+        return Tasks.whenAll(tasks)
     }
 
     fun getDentistSlotsForDate(
@@ -122,70 +109,62 @@ class AppointmentService(
             )
         }
 
-        val startOfDay = Calendar.getInstance().apply {
-            timeInMillis = selectedDate
-
-            set(Calendar.HOUR_OF_DAY, 0)
-            set(Calendar.MINUTE, 0)
-            set(Calendar.SECOND, 0)
-            set(Calendar.MILLISECOND, 0)
-        }
-
-        val startOfNextDay = Calendar.getInstance().apply {
-            timeInMillis = startOfDay.timeInMillis
-            add(Calendar.DAY_OF_MONTH, 1)
-        }
-
         return appointmentRepository.getDentistSlotsForDate(
             dentistId = dentistId,
-            startOfDay = startOfDay.timeInMillis,
-            startOfNextDay = startOfNextDay.timeInMillis
+            startOfDay =
+                AppointmentDateUtils.getStartOfDay(
+                    selectedDate
+                ),
+            startOfNextDay =
+                AppointmentDateUtils.getStartOfNextDay(
+                    selectedDate
+                )
         )
     }
 
-    fun getDentistAppointments(
+    private fun createAppointmentSlot(
         dentistId: String,
-        fromDateTime: Long,
-        onSuccess: (List<AppointmentSlot>) -> Unit,
-        onFailure: (Exception) -> Unit
-    ) {
-        if (dentistId.isBlank()) {
-            onFailure(
-                IllegalArgumentException(
-                    "Липсва идентификатор на стоматолога."
-                )
+        startDateTime: Long,
+        endDateTime: Long
+    ): Task<Void> {
+
+        if (
+            startDateTime <= 0L ||
+            endDateTime <= 0L
+        ) {
+            return createFailedTask(
+                "Невалидна дата или час."
             )
-            return
         }
 
-        appointmentRepository.getDentistAppointments(
+        if (endDateTime <= startDateTime) {
+            return createFailedTask(
+                "Крайният час трябва да бъде след началния час."
+            )
+        }
+
+        if (startDateTime <= System.currentTimeMillis()) {
+            return createFailedTask(
+                "Не може да бъде добавен час в миналото."
+            )
+        }
+
+        val appointmentSlot = AppointmentSlot(
             dentistId = dentistId,
-            fromDateTime = fromDateTime,
-            onSuccess = onSuccess,
-            onFailure = onFailure
+            startDateTime = startDateTime,
+            endDateTime = endDateTime
+        )
+
+        return appointmentRepository.createAppointmentSlot(
+            appointmentSlot
         )
     }
 
-    fun getPatientAppointments(
-        patientId: String,
-        fromDateTime: Long,
-        onSuccess: (List<AppointmentSlot>) -> Unit,
-        onFailure: (Exception) -> Unit
-    ) {
-        if (patientId.isBlank()) {
-            onFailure(
-                IllegalArgumentException(
-                    "Липсва идентификатор на пациента."
-                )
-            )
-            return
-        }
-
-        appointmentRepository.getPatientAppointments(
-            patientId = patientId,
-            fromDateTime = fromDateTime,
-            onSuccess = onSuccess,
-            onFailure = onFailure
+    private fun createFailedTask(
+        message: String
+    ): Task<Void> {
+        return Tasks.forException(
+            IllegalArgumentException(message)
         )
     }
 }

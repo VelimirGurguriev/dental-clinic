@@ -14,8 +14,6 @@ import androidx.recyclerview.widget.GridLayoutManager
 import com.applandeo.materialcalendarview.CalendarDay
 import com.applandeo.materialcalendarview.EventDay
 import com.applandeo.materialcalendarview.listeners.OnDayClickListener
-import com.google.android.gms.tasks.Task
-import com.google.android.gms.tasks.Tasks
 import com.google.android.material.snackbar.Snackbar
 import com.google.firebase.auth.FirebaseAuth
 import com.velimir_gurguriev.dentalclinic.R
@@ -280,9 +278,10 @@ class AppointmentFragment : Fragment() {
     }
 
     private fun createSelectedAppointmentSlots() {
-        val dentistId = FirebaseAuth.getInstance()
-            .currentUser
-            ?.uid
+        val dentistId =
+            FirebaseAuth.getInstance()
+                .currentUser
+                ?.uid
 
         if (dentistId == null) {
             showMessage(
@@ -303,37 +302,11 @@ class AppointmentFragment : Fragment() {
 
         setCreationLoadingState(true)
 
-        val creationTasks =
-            selectedSlots.map { timeSlot ->
-
-                val startDateTime =
-                    AppointmentDateUtils.createDateTime(
-                        date = selectedDate,
-                        hour = timeSlot.startHour,
-                        minute = timeSlot.startMinute
-                    )
-
-                val endDateTime =
-                    AppointmentDateUtils.createDateTime(
-                        date = selectedDate,
-                        hour = timeSlot.endHour,
-                        minute = timeSlot.endMinute
-                    )
-
-                appointmentService.createAppointmentSlot(
-                    dentistId = dentistId,
-                    startDateTime = startDateTime,
-                    endDateTime = endDateTime
-                )
-            }
-
-        waitForCreationTasks(creationTasks)
-    }
-
-    private fun waitForCreationTasks(
-        tasks: List<Task<Void>>
-    ) {
-        Tasks.whenAll(tasks)
+        appointmentService.createAppointmentSlots(
+            dentistId = dentistId,
+            selectedDate = selectedDate,
+            timeSlots = selectedSlots
+        )
             .addOnSuccessListener {
                 setCreationLoadingState(false)
 
@@ -385,32 +358,9 @@ class AppointmentFragment : Fragment() {
     ) {
         setCancellationLoadingState(true)
 
-        val cancellationTasks =
-            selectedSlots.mapNotNull { timeSlot ->
-
-                val appointmentId =
-                    timeSlot.appointmentId
-
-                if (appointmentId.isNullOrBlank()) {
-                    null
-                } else {
-                    appointmentService
-                        .cancelAppointmentSlot(
-                            appointmentId
-                        )
-                }
-            }
-
-        if (cancellationTasks.isEmpty()) {
-            setCancellationLoadingState(false)
-
-            showMessage(
-                "Не бяха намерени часове за премахване."
-            )
-            return
-        }
-
-        Tasks.whenAll(cancellationTasks)
+        appointmentService.cancelAppointmentSlots(
+            timeSlots = selectedSlots
+        )
             .addOnSuccessListener {
                 setCancellationLoadingState(false)
 

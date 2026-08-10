@@ -73,4 +73,22 @@ object AppointmentDateUtils {
             Date(date)
         )
     }
+
+    fun getStartOfDay(
+        date: Long
+    ): Long {
+        return Calendar.getInstance().apply {
+            timeInMillis = date
+            clearTime(this)
+        }.timeInMillis
+    }
+
+    fun getStartOfNextDay(
+        date: Long
+    ): Long {
+        return Calendar.getInstance().apply {
+            timeInMillis = getStartOfDay(date)
+            add(Calendar.DAY_OF_MONTH, 1)
+        }.timeInMillis
+    }
 }
