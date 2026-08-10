@@ -24,11 +24,9 @@ import com.velimir_gurguriev.dentalclinic.databinding.FragmentAppointmentBinding
 import com.velimir_gurguriev.dentalclinic.models.appointments.TimeSlotItem
 import com.velimir_gurguriev.dentalclinic.repositories.AppointmentRepository
 import com.velimir_gurguriev.dentalclinic.services.appointments.AppointmentService
+import com.velimir_gurguriev.dentalclinic.utils.appointments.AppointmentDateUtils
 import com.velimir_gurguriev.dentalclinic.utils.appointments.TimeSlotGenerator
-import java.text.SimpleDateFormat
 import java.util.Calendar
-import java.util.Date
-import java.util.Locale
 
 class AppointmentFragment : Fragment() {
 
@@ -85,9 +83,7 @@ class AppointmentFragment : Fragment() {
     }
 
     private fun setupCalendar() {
-        val today = Calendar.getInstance().apply {
-            clearTime(this)
-        }
+        val today = AppointmentDateUtils.getToday()
 
         selectedDate = today.timeInMillis
 
@@ -110,13 +106,15 @@ class AppointmentFragment : Fragment() {
                     val clickedDate =
                         eventDay.calendar.clone() as Calendar
 
-                    clearTime(clickedDate)
+                    AppointmentDateUtils.clearTime(
+                        clickedDate
+                    )
 
-                    val today = Calendar.getInstance().apply {
-                        clearTime(this)
-                    }
-
-                    if (clickedDate.before(today)) {
+                    if (
+                        AppointmentDateUtils.isPastDate(
+                            clickedDate
+                        )
+                    ) {
                         showMessage(
                             "Не можете да изберете изминала дата."
                         )
@@ -130,7 +128,11 @@ class AppointmentFragment : Fragment() {
                     updateSelectedDate(eventDay)
                     timeSlotAdapter.clearSelection()
 
-                    if (!isWeekend(clickedDate)) {
+                    if (
+                        !AppointmentDateUtils.isWeekend(
+                            clickedDate
+                        )
+                    ) {
                         loadPublishedSlots()
                     }
                 }
@@ -138,38 +140,27 @@ class AppointmentFragment : Fragment() {
         )
     }
 
-    private fun isWeekend(
-        calendar: Calendar
-    ): Boolean {
-        val dayOfWeek =
-            calendar.get(Calendar.DAY_OF_WEEK)
-
-        return dayOfWeek == Calendar.SATURDAY ||
-                dayOfWeek == Calendar.SUNDAY
-    }
-
     private fun applyWeekendColors() {
         val weekendDays = mutableListOf<CalendarDay>()
 
-        val startDate = Calendar.getInstance().apply {
-            add(Calendar.YEAR, -1)
-            clearTime(this)
-        }
+        val startDate =
+            AppointmentDateUtils.getToday().apply {
+                add(Calendar.YEAR, -1)
+            }
 
-        val endDate = Calendar.getInstance().apply {
-            add(Calendar.YEAR, 5)
-            clearTime(this)
-        }
+        val endDate =
+            AppointmentDateUtils.getToday().apply {
+                add(Calendar.YEAR, 5)
+            }
 
         val currentDate = startDate.clone() as Calendar
 
         while (!currentDate.after(endDate)) {
-            val dayOfWeek =
-                currentDate.get(Calendar.DAY_OF_WEEK)
 
             if (
-                dayOfWeek == Calendar.SATURDAY ||
-                dayOfWeek == Calendar.SUNDAY
+                AppointmentDateUtils.isWeekend(
+                    currentDate
+                )
             ) {
                 weekendDays.add(
                     CalendarDay(
@@ -198,7 +189,9 @@ class AppointmentFragment : Fragment() {
         val calendar =
             eventDay.calendar.clone() as Calendar
 
-        clearTime(calendar)
+        AppointmentDateUtils.clearTime(
+            calendar
+        )
 
         selectedDate = calendar.timeInMillis
 
@@ -209,12 +202,10 @@ class AppointmentFragment : Fragment() {
     private fun updateWeekendState(
         calendar: Calendar
     ) {
-        val dayOfWeek =
-            calendar.get(Calendar.DAY_OF_WEEK)
-
         val isWeekend =
-            dayOfWeek == Calendar.SATURDAY ||
-                    dayOfWeek == Calendar.SUNDAY
+            AppointmentDateUtils.isWeekend(
+                calendar
+            )
 
         val weekendVisibility =
             if (isWeekend) View.VISIBLE else View.GONE
@@ -315,17 +306,19 @@ class AppointmentFragment : Fragment() {
         val creationTasks =
             selectedSlots.map { timeSlot ->
 
-                val startDateTime = createDateTime(
-                    selectedDate = selectedDate,
-                    hour = timeSlot.startHour,
-                    minute = timeSlot.startMinute
-                )
+                val startDateTime =
+                    AppointmentDateUtils.createDateTime(
+                        date = selectedDate,
+                        hour = timeSlot.startHour,
+                        minute = timeSlot.startMinute
+                    )
 
-                val endDateTime = createDateTime(
-                    selectedDate = selectedDate,
-                    hour = timeSlot.endHour,
-                    minute = timeSlot.endMinute
-                )
+                val endDateTime =
+                    AppointmentDateUtils.createDateTime(
+                        date = selectedDate,
+                        hour = timeSlot.endHour,
+                        minute = timeSlot.endMinute
+                    )
 
                 appointmentService.createAppointmentSlot(
                     dentistId = dentistId,
@@ -438,59 +431,14 @@ class AppointmentFragment : Fragment() {
             }
     }
 
-    private fun createDateTime(
-        selectedDate: Long,
-        hour: Int,
-        minute: Int
-    ): Long {
-
-        val calendar =
-            Calendar.getInstance().apply {
-                timeInMillis = selectedDate
-
-                set(Calendar.HOUR_OF_DAY, hour)
-                set(Calendar.MINUTE, minute)
-                set(Calendar.SECOND, 0)
-                set(Calendar.MILLISECOND, 0)
-            }
-
-        return calendar.timeInMillis
-    }
-
     private fun updateSelectedDateText() {
-        val dateFormat = SimpleDateFormat(
-            "dd MMMM yyyy",
-            Locale("bg", "BG")
-        )
-
         val formattedDate =
-            dateFormat.format(
-                Date(selectedDate)
+            AppointmentDateUtils.formatDate(
+                selectedDate
             )
 
         binding.selectedDateTextView.text =
             "Избрана дата: $formattedDate"
-    }
-
-    private fun clearTime(
-        calendar: Calendar
-    ) {
-        calendar.set(
-            Calendar.HOUR_OF_DAY,
-            0
-        )
-        calendar.set(
-            Calendar.MINUTE,
-            0
-        )
-        calendar.set(
-            Calendar.SECOND,
-            0
-        )
-        calendar.set(
-            Calendar.MILLISECOND,
-            0
-        )
     }
 
     private fun setCreationLoadingState(
