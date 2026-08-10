@@ -24,6 +24,7 @@ import com.velimir_gurguriev.dentalclinic.databinding.FragmentAppointmentBinding
 import com.velimir_gurguriev.dentalclinic.models.appointments.TimeSlotItem
 import com.velimir_gurguriev.dentalclinic.repositories.AppointmentRepository
 import com.velimir_gurguriev.dentalclinic.services.appointments.AppointmentService
+import com.velimir_gurguriev.dentalclinic.utils.appointments.TimeSlotGenerator
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Date
@@ -66,7 +67,7 @@ class AppointmentFragment : Fragment() {
     }
 
     private fun setupRecyclerView() {
-        val timeSlots = generateTimeSlots(
+        val timeSlots = TimeSlotGenerator.generate(
             startHour = START_WORKING_HOUR,
             endHour = END_WORKING_HOUR
         )
@@ -437,70 +438,6 @@ class AppointmentFragment : Fragment() {
             }
     }
 
-    private fun generateTimeSlots(
-        startHour: Int,
-        endHour: Int
-    ): List<TimeSlotItem> {
-
-        val timeSlots =
-            mutableListOf<TimeSlotItem>()
-
-        val currentTime = Calendar.getInstance().apply {
-            set(Calendar.HOUR_OF_DAY, startHour)
-            set(Calendar.MINUTE, 0)
-            set(Calendar.SECOND, 0)
-            set(Calendar.MILLISECOND, 0)
-        }
-
-        while (true) {
-            val startSlotHour =
-                currentTime.get(
-                    Calendar.HOUR_OF_DAY
-                )
-
-            val startSlotMinute =
-                currentTime.get(
-                    Calendar.MINUTE
-                )
-
-            currentTime.add(
-                Calendar.MINUTE,
-                SLOT_DURATION_MINUTES
-            )
-
-            val endSlotHour =
-                currentTime.get(
-                    Calendar.HOUR_OF_DAY
-                )
-
-            val endSlotMinute =
-                currentTime.get(
-                    Calendar.MINUTE
-                )
-
-            if (
-                endSlotHour > endHour ||
-                (
-                        endSlotHour == endHour &&
-                                endSlotMinute > 0
-                        )
-            ) {
-                break
-            }
-
-            timeSlots.add(
-                TimeSlotItem(
-                    startHour = startSlotHour,
-                    startMinute = startSlotMinute,
-                    endHour = endSlotHour,
-                    endMinute = endSlotMinute
-                )
-            )
-        }
-
-        return timeSlots
-    }
-
     private fun createDateTime(
         selectedDate: Long,
         hour: Int,
@@ -657,8 +594,6 @@ class AppointmentFragment : Fragment() {
     companion object {
         private const val START_WORKING_HOUR = 8
         private const val END_WORKING_HOUR = 16
-
-        private const val SLOT_DURATION_MINUTES = 30
         private const val GRID_COLUMN_COUNT = 3
     }
 }
