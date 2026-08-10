@@ -241,12 +241,12 @@ class AppointmentFragment : Fragment() {
 
         binding.selectAllSlotsButton
             .setOnClickListener {
-                timeSlotAdapter.selectAllAvailableSlots()
+                timeSlotAdapter.selectAllUnpublishedSlots()
             }
 
         binding.deselectAllSlotsButton
             .setOnClickListener {
-                timeSlotAdapter.deselectAllSlots()
+                timeSlotAdapter.clearSelection()
             }
     }
 

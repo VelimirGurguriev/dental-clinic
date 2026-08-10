@@ -10,7 +10,7 @@ import com.velimir_gurguriev.dentalclinic.databinding.DisplayTimeSlotBinding
 import com.velimir_gurguriev.dentalclinic.models.appointments.AppointmentSlot
 import com.velimir_gurguriev.dentalclinic.models.appointments.AppointmentStatus
 import com.velimir_gurguriev.dentalclinic.models.appointments.TimeSlotItem
-import java.util.Calendar
+import com.velimir_gurguriev.dentalclinic.utils.appointments.TimeSlotAppointmentMapper
 import java.util.Locale
 
 class TimeSlotAdapter(
@@ -178,48 +178,15 @@ class TimeSlotAdapter(
     fun updatePublishedSlots(
         appointmentSlots: List<AppointmentSlot>
     ) {
-        timeSlots.forEach { timeSlot ->
-
-            val matchingAppointment =
-                appointmentSlots.find { appointmentSlot ->
-
-                    val calendar = Calendar.getInstance().apply {
-                        timeInMillis =
-                            appointmentSlot.startDateTime
-                    }
-
-                    calendar.get(Calendar.HOUR_OF_DAY) ==
-                            timeSlot.startHour &&
-                            calendar.get(Calendar.MINUTE) ==
-                            timeSlot.startMinute &&
-                            appointmentSlot.status !=
-                            AppointmentStatus.CANCELLED.name
-                }
-
-            timeSlot.appointmentId =
-                matchingAppointment?.id
-
-            timeSlot.appointmentStatus =
-                matchingAppointment
-                    ?.status
-                    ?.let { status ->
-                        runCatching {
-                            AppointmentStatus.valueOf(status)
-                        }.getOrNull()
-                    }
-
-            timeSlot.isPublished =
-                timeSlot.appointmentStatus ==
-                        AppointmentStatus.AVAILABLE
-
-            timeSlot.isSelected = false
-            timeSlot.isSelectedForCancellation = false
-        }
+        TimeSlotAppointmentMapper.applyAppointments(
+            timeSlots = timeSlots,
+            appointmentSlots = appointmentSlots
+        )
 
         notifyDataSetChanged()
     }
 
-    fun selectAllAvailableSlots() {
+    fun selectAllUnpublishedSlots() {
         timeSlots.forEach { timeSlot ->
             if (timeSlot.appointmentStatus == null) {
                 timeSlot.isSelected = true
@@ -228,10 +195,6 @@ class TimeSlotAdapter(
         }
 
         notifyDataSetChanged()
-    }
-
-    fun deselectAllSlots() {
-        clearSelection()
     }
 
     private fun formatTime(
