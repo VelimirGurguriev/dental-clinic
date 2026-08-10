@@ -1,20 +1,14 @@
 package com.velimir_gurguriev.dentalclinic.fragments
 
 import android.os.Bundle
-import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.FrameLayout
 import androidx.appcompat.app.AlertDialog
-import androidx.appcompat.content.res.AppCompatResources
-import androidx.core.view.ViewCompat
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.GridLayoutManager
-import com.applandeo.materialcalendarview.CalendarDay
 import com.applandeo.materialcalendarview.EventDay
 import com.applandeo.materialcalendarview.listeners.OnDayClickListener
-import com.google.android.material.snackbar.Snackbar
 import com.google.firebase.auth.FirebaseAuth
 import com.velimir_gurguriev.dentalclinic.R
 import com.velimir_gurguriev.dentalclinic.adapters.TimeSlotAdapter
@@ -22,8 +16,10 @@ import com.velimir_gurguriev.dentalclinic.databinding.FragmentAppointmentBinding
 import com.velimir_gurguriev.dentalclinic.models.appointments.TimeSlotItem
 import com.velimir_gurguriev.dentalclinic.repositories.AppointmentRepository
 import com.velimir_gurguriev.dentalclinic.services.appointments.AppointmentService
+import com.velimir_gurguriev.dentalclinic.utils.appointments.AppointmentCalendarDecorator
 import com.velimir_gurguriev.dentalclinic.utils.appointments.AppointmentDateUtils
 import com.velimir_gurguriev.dentalclinic.utils.appointments.TimeSlotGenerator
+import com.velimir_gurguriev.dentalclinic.utils.ui.SnackbarUtils
 import java.util.Calendar
 
 class AppointmentFragment : Fragment() {
@@ -92,7 +88,9 @@ class AppointmentFragment : Fragment() {
             R.drawable.calendar_selected_day
         )
 
-        applyWeekendColors()
+        AppointmentCalendarDecorator.applyWeekendColors(
+            binding.appointmentCalendarView
+        )
         updateSelectedDateText()
         updateWeekendState(today)
         loadPublishedSlots()
@@ -135,49 +133,6 @@ class AppointmentFragment : Fragment() {
                     }
                 }
             }
-        )
-    }
-
-    private fun applyWeekendColors() {
-        val weekendDays = mutableListOf<CalendarDay>()
-
-        val startDate =
-            AppointmentDateUtils.getToday().apply {
-                add(Calendar.YEAR, -1)
-            }
-
-        val endDate =
-            AppointmentDateUtils.getToday().apply {
-                add(Calendar.YEAR, 5)
-            }
-
-        val currentDate = startDate.clone() as Calendar
-
-        while (!currentDate.after(endDate)) {
-
-            if (
-                AppointmentDateUtils.isWeekend(
-                    currentDate
-                )
-            ) {
-                weekendDays.add(
-                    CalendarDay(
-                        currentDate.clone() as Calendar
-                    ).apply {
-                        labelColor =
-                            R.color.calendar_weekend
-                    }
-                )
-            }
-
-            currentDate.add(
-                Calendar.DAY_OF_MONTH,
-                1
-            )
-        }
-
-        binding.appointmentCalendarView.setCalendarDays(
-            weekendDays
         )
     }
 
@@ -440,53 +395,10 @@ class AppointmentFragment : Fragment() {
     private fun showMessage(
         message: String
     ) {
-        val snackbar = Snackbar.make(
-            binding.root,
-            message,
-            Snackbar.LENGTH_SHORT
+        SnackbarUtils.show(
+            rootView = binding.root,
+            message = message
         )
-
-        val snackbarView = snackbar.view
-
-        ViewCompat.setBackgroundTintList(
-            snackbarView,
-            null
-        )
-
-        snackbarView.background =
-            AppCompatResources.getDrawable(
-                requireContext(),
-                R.drawable.snackbar_background
-            )
-
-        val layoutParams =
-            snackbarView.layoutParams as FrameLayout.LayoutParams
-
-        layoutParams.gravity =
-            Gravity.TOP or Gravity.CENTER_HORIZONTAL
-
-        val horizontalMargin =
-            resources.getDimensionPixelSize(
-                R.dimen.snackbar_horizontal_margin
-            )
-
-        layoutParams.setMargins(
-            horizontalMargin,
-            resources.getDimensionPixelSize(
-                R.dimen.snackbar_top_margin
-            ),
-            horizontalMargin,
-            0
-        )
-
-        snackbarView.layoutParams = layoutParams
-
-        snackbarView.elevation =
-            resources.getDimension(
-                R.dimen.snackbar_elevation
-            )
-
-        snackbar.show()
     }
 
     companion object {
