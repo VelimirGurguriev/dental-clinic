@@ -210,14 +210,9 @@ class AppointmentFragment : Fragment() {
     }
 
     private fun loadPublishedSlots() {
-        val dentistId = authRepository.getCurrentUserId()
-
-        if (dentistId == null) {
-            showMessage(
-                "Не е намерен влязъл потребител."
-            )
-            return
-        }
+        val dentistId =
+            getCurrentDentistId()
+                ?: return
 
         appointmentService.getDentistSlotsForDate(
             dentistId = dentistId,
@@ -237,14 +232,9 @@ class AppointmentFragment : Fragment() {
     }
 
     private fun createSelectedAppointmentSlots() {
-        val dentistId = authRepository.getCurrentUserId()
-
-        if (dentistId == null) {
-            showMessage(
-                "Не е намерен влязъл потребител."
-            )
-            return
-        }
+        val dentistId =
+            getCurrentDentistId()
+                ?: return
 
         val selectedSlots =
             timeSlotAdapter.getSelectedSlots()
@@ -391,6 +381,19 @@ class AppointmentFragment : Fragment() {
             } else {
                 "Премахни час"
             }
+    }
+
+    private fun getCurrentDentistId(): String? {
+        val dentistId =
+            authRepository.getCurrentUserId()
+
+        if (dentistId == null) {
+            showMessage(
+                "Не е намерен влязъл потребител."
+            )
+        }
+
+        return dentistId
     }
 
     private fun showMessage(
