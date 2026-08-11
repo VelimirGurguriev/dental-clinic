@@ -9,12 +9,12 @@ import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.GridLayoutManager
 import com.applandeo.materialcalendarview.EventDay
 import com.applandeo.materialcalendarview.listeners.OnDayClickListener
-import com.google.firebase.auth.FirebaseAuth
 import com.velimir_gurguriev.dentalclinic.R
 import com.velimir_gurguriev.dentalclinic.adapters.TimeSlotAdapter
 import com.velimir_gurguriev.dentalclinic.databinding.FragmentAppointmentBinding
 import com.velimir_gurguriev.dentalclinic.models.appointments.TimeSlotItem
 import com.velimir_gurguriev.dentalclinic.repositories.AppointmentRepository
+import com.velimir_gurguriev.dentalclinic.repositories.AuthRepository
 import com.velimir_gurguriev.dentalclinic.services.appointments.AppointmentService
 import com.velimir_gurguriev.dentalclinic.utils.appointments.AppointmentCalendarDecorator
 import com.velimir_gurguriev.dentalclinic.utils.appointments.AppointmentDateUtils
@@ -27,6 +27,8 @@ class AppointmentFragment : Fragment() {
     private lateinit var binding: FragmentAppointmentBinding
     private lateinit var appointmentService: AppointmentService
     private lateinit var timeSlotAdapter: TimeSlotAdapter
+
+    private lateinit var authRepository: AuthRepository
 
     private var selectedDate: Long = 0L
 
@@ -51,11 +53,15 @@ class AppointmentFragment : Fragment() {
     }
 
     private fun initializeDependencies() {
-        val appointmentRepository = AppointmentRepository()
+        authRepository = AuthRepository()
 
-        appointmentService = AppointmentService(
-            appointmentRepository
-        )
+        val appointmentRepository =
+            AppointmentRepository()
+
+        appointmentService =
+            AppointmentService(
+                appointmentRepository
+            )
     }
 
     private fun setupRecyclerView() {
@@ -204,9 +210,7 @@ class AppointmentFragment : Fragment() {
     }
 
     private fun loadPublishedSlots() {
-        val dentistId = FirebaseAuth.getInstance()
-            .currentUser
-            ?.uid
+        val dentistId = authRepository.getCurrentUserId()
 
         if (dentistId == null) {
             showMessage(
@@ -233,10 +237,7 @@ class AppointmentFragment : Fragment() {
     }
 
     private fun createSelectedAppointmentSlots() {
-        val dentistId =
-            FirebaseAuth.getInstance()
-                .currentUser
-                ?.uid
+        val dentistId = authRepository.getCurrentUserId()
 
         if (dentistId == null) {
             showMessage(
