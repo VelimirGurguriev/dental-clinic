@@ -347,20 +347,28 @@ class AppointmentFragment : Fragment() {
             "Избрана дата: $formattedDate"
     }
 
+    private fun setAppointmentControlsEnabled(
+        isEnabled: Boolean
+    ) {
+        binding.createAppointmentSlotsButton.isEnabled =
+            isEnabled
+
+        binding.removeAppointmentSlotButton.isEnabled =
+            isEnabled
+
+        binding.selectAllSlotsButton.isEnabled =
+            isEnabled
+
+        binding.deselectAllSlotsButton.isEnabled =
+            isEnabled
+    }
+
     private fun setCreationLoadingState(
         isLoading: Boolean
     ) {
-        binding.createAppointmentSlotsButton.isEnabled =
+        setAppointmentControlsEnabled(
             !isLoading
-
-        binding.removeAppointmentSlotButton.isEnabled =
-            !isLoading
-
-        binding.selectAllSlotsButton.isEnabled =
-            !isLoading
-
-        binding.deselectAllSlotsButton.isEnabled =
-            !isLoading
+        )
 
         binding.createAppointmentSlotsButton.text =
             if (isLoading) {
@@ -373,17 +381,9 @@ class AppointmentFragment : Fragment() {
     private fun setCancellationLoadingState(
         isLoading: Boolean
     ) {
-        binding.createAppointmentSlotsButton.isEnabled =
+        setAppointmentControlsEnabled(
             !isLoading
-
-        binding.removeAppointmentSlotButton.isEnabled =
-            !isLoading
-
-        binding.selectAllSlotsButton.isEnabled =
-            !isLoading
-
-        binding.deselectAllSlotsButton.isEnabled =
-            !isLoading
+        )
 
         binding.removeAppointmentSlotButton.text =
             if (isLoading) {
