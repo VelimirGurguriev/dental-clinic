@@ -1,13 +1,17 @@
 package com.velimir_gurguriev.dentalclinic.services.connections
 
 import com.google.android.gms.tasks.Task
+import com.google.android.gms.tasks.TaskCompletionSource
 import com.google.android.gms.tasks.Tasks
-import com.google.firebase.firestore.QuerySnapshot
+import com.velimir_gurguriev.dentalclinic.models.connections.DentistPatientItem
 import com.velimir_gurguriev.dentalclinic.models.connections.DentistPatientStatus
+import com.velimir_gurguriev.dentalclinic.models.connections.PatientRequestItem
 import com.velimir_gurguriev.dentalclinic.repositories.DentistPatientConnectionRepository
+import com.velimir_gurguriev.dentalclinic.repositories.UserRepository
 
 class DentistPatientConnectionService(
-    private val connectionRepository: DentistPatientConnectionRepository
+    private val connectionRepository: DentistPatientConnectionRepository,
+    private val userRepository: UserRepository = UserRepository()
 ) {
 
     fun sendConnectionRequest(
@@ -16,47 +20,52 @@ class DentistPatientConnectionService(
     ): Task<Void> {
 
         if (patientId.isBlank()) {
-            return Tasks.forException(
-                IllegalArgumentException("Patient ID cannot be empty.")
+            return failedTask(
+                "Липсва ID на пациента."
             )
         }
 
         if (dentistId.isBlank()) {
-            return Tasks.forException(
-                IllegalArgumentException("Dentist ID cannot be empty.")
+            return failedTask(
+                "Липсва ID на стоматолога."
             )
         }
 
         if (patientId == dentistId) {
-            return Tasks.forException(
-                IllegalArgumentException(
-                    "A user cannot send a connection request to themselves."
-                )
+            return failedTask(
+                "Не можете да изпратите заявка към себе си."
             )
         }
 
         return connectionRepository
-            .getConnection(patientId, dentistId)
+            .getConnection(
+                patientId = patientId,
+                dentistId = dentistId
+            )
             .continueWithTask { task ->
 
                 if (!task.isSuccessful) {
                     throw task.exception
                         ?: IllegalStateException(
-                            "Failed to check the existing connection."
+                            "Неуспешна проверка за съществуваща връзка."
                         )
                 }
 
-                val querySnapshot = task.result
+                val querySnapshot =
+                    task.result
 
                 if (querySnapshot.isEmpty) {
                     return@continueWithTask connectionRepository
-                        .sendRequest(patientId, dentistId)
+                        .sendRequest(
+                            patientId = patientId,
+                            dentistId = dentistId
+                        )
                         .continueWith { sendTask ->
 
                             if (!sendTask.isSuccessful) {
                                 throw sendTask.exception
                                     ?: IllegalStateException(
-                                        "Failed to send the connection request."
+                                        "Заявката не можа да бъде изпратена."
                                     )
                             }
 
@@ -64,31 +73,37 @@ class DentistPatientConnectionService(
                         }
                 }
 
-                val existingDocument = querySnapshot.documents.first()
-                val existingStatus = existingDocument.getString("status")
+                val existingDocument =
+                    querySnapshot.documents.first()
+
+                val existingStatus =
+                    existingDocument.getString(
+                        STATUS_FIELD
+                    )
 
                 when (existingStatus) {
                     DentistPatientStatus.PENDING.name -> {
                         throw IllegalStateException(
-                            "A connection request is already pending."
+                            "Вече има чакаща заявка към този стоматолог."
                         )
                     }
 
                     DentistPatientStatus.APPROVED.name -> {
                         throw IllegalStateException(
-                            "This dentist has already approved you as a patient."
+                            "Вече сте пациент на този стоматолог."
                         )
                     }
 
                     DentistPatientStatus.REJECTED.name -> {
-                        connectionRepository.resendRejectedRequest(
-                            existingDocument.id
-                        )
+                        connectionRepository
+                            .resendRejectedRequest(
+                                existingDocument.id
+                            )
                     }
 
                     else -> {
                         throw IllegalStateException(
-                            "The existing connection has an invalid status."
+                            "Връзката е с невалиден статус."
                         )
                     }
                 }
@@ -97,16 +112,118 @@ class DentistPatientConnectionService(
 
     fun getPendingRequestsForDentist(
         dentistId: String
-    ): Task<QuerySnapshot> {
+    ): Task<List<PatientRequestItem>> {
 
         if (dentistId.isBlank()) {
             return Tasks.forException(
-                IllegalArgumentException("Dentist ID cannot be empty.")
+                IllegalArgumentException(
+                    "Липсва ID на стоматолога."
+                )
             )
         }
 
         return connectionRepository
-            .getPendingRequestsForDentist(dentistId)
+            .getPendingRequestsForDentist(
+                dentistId
+            )
+            .continueWithTask { task ->
+
+                if (!task.isSuccessful) {
+                    throw task.exception
+                        ?: IllegalStateException(
+                            "Заявките не можаха да бъдат заредени."
+                        )
+                }
+
+                val itemTasks =
+                    task.result.documents.mapNotNull { document ->
+
+                        val patientId =
+                            document.getString(
+                                PATIENT_ID_FIELD
+                            )
+
+                        if (patientId.isNullOrBlank()) {
+                            null
+                        } else {
+                            loadPatientRequestItem(
+                                connectionId = document.id,
+                                patientId = patientId
+                            )
+                        }
+                    }
+
+                if (itemTasks.isEmpty()) {
+                    return@continueWithTask Tasks.forResult(
+                        emptyList()
+                    )
+                }
+
+                Tasks.whenAllSuccess<PatientRequestItem?>(
+                    itemTasks
+                )
+                    .continueWith { itemsTask ->
+                        itemsTask.result.filterNotNull()
+                    }
+            }
+    }
+
+    fun getApprovedPatientsForDentist(
+        dentistId: String
+    ): Task<List<DentistPatientItem>> {
+
+        if (dentistId.isBlank()) {
+            return Tasks.forException(
+                IllegalArgumentException(
+                    "Липсва ID на стоматолога."
+                )
+            )
+        }
+
+        return connectionRepository
+            .getApprovedPatientsForDentist(
+                dentistId
+            )
+            .continueWithTask { task ->
+
+                if (!task.isSuccessful) {
+                    throw task.exception
+                        ?: IllegalStateException(
+                            "Пациентите не можаха да бъдат заредени."
+                        )
+                }
+
+                val itemTasks =
+                    task.result.documents.mapNotNull { document ->
+
+                        val patientId =
+                            document.getString(
+                                PATIENT_ID_FIELD
+                            )
+
+                        if (patientId.isNullOrBlank()) {
+                            null
+                        } else {
+                            loadDentistPatientItem(
+                                connectionId = document.id,
+                                patientId = patientId
+                            )
+                        }
+                    }
+
+                if (itemTasks.isEmpty()) {
+                    return@continueWithTask Tasks.forResult(
+                        emptyList()
+                    )
+                }
+
+                Tasks.whenAllSuccess<DentistPatientItem?>(
+                    itemTasks
+                )
+                    .continueWith { itemsTask ->
+                        itemsTask.result.filterNotNull()
+                    }
+            }
     }
 
     fun approveRequest(
@@ -114,12 +231,15 @@ class DentistPatientConnectionService(
     ): Task<Void> {
 
         if (connectionId.isBlank()) {
-            return Tasks.forException(
-                IllegalArgumentException("Connection ID cannot be empty.")
+            return failedTask(
+                "Липсва ID на заявката."
             )
         }
 
-        return connectionRepository.approveRequest(connectionId)
+        return connectionRepository
+            .approveRequest(
+                connectionId
+            )
     }
 
     fun rejectRequest(
@@ -127,27 +247,84 @@ class DentistPatientConnectionService(
     ): Task<Void> {
 
         if (connectionId.isBlank()) {
-            return Tasks.forException(
-                IllegalArgumentException("Connection ID cannot be empty.")
-            )
-        }
-
-        return connectionRepository.rejectRequest(connectionId)
-    }
-
-    fun getApprovedPatientsForDentist(
-        dentistId: String
-    ): Task<QuerySnapshot> {
-
-        if (dentistId.isBlank()) {
-            return Tasks.forException(
-                IllegalArgumentException(
-                    "Dentist ID cannot be empty."
-                )
+            return failedTask(
+                "Липсва ID на заявката."
             )
         }
 
         return connectionRepository
-            .getApprovedPatientsForDentist(dentistId)
+            .rejectRequest(
+                connectionId
+            )
+    }
+
+    private fun loadPatientRequestItem(
+        connectionId: String,
+        patientId: String
+    ): Task<PatientRequestItem?> {
+
+        val taskCompletionSource =
+            TaskCompletionSource<PatientRequestItem?>()
+
+        userRepository.getUserById(
+            uid = patientId,
+            onSuccess = { patient ->
+
+                taskCompletionSource.setResult(
+                    PatientRequestItem(
+                        connectionId = connectionId,
+                        patient = patient
+                    )
+                )
+            },
+            onFailure = {
+                taskCompletionSource.setResult(null)
+            }
+        )
+
+        return taskCompletionSource.task
+    }
+
+    private fun loadDentistPatientItem(
+        connectionId: String,
+        patientId: String
+    ): Task<DentistPatientItem?> {
+
+        val taskCompletionSource =
+            TaskCompletionSource<DentistPatientItem?>()
+
+        userRepository.getUserById(
+            uid = patientId,
+            onSuccess = { patient ->
+
+                taskCompletionSource.setResult(
+                    DentistPatientItem(
+                        connectionId = connectionId,
+                        patient = patient
+                    )
+                )
+            },
+            onFailure = {
+                taskCompletionSource.setResult(null)
+            }
+        )
+
+        return taskCompletionSource.task
+    }
+
+    private fun failedTask(
+        message: String
+    ): Task<Void> {
+        return Tasks.forException(
+            IllegalArgumentException(message)
+        )
+    }
+
+    companion object {
+        private const val PATIENT_ID_FIELD =
+            "patientId"
+
+        private const val STATUS_FIELD =
+            "status"
     }
 }
