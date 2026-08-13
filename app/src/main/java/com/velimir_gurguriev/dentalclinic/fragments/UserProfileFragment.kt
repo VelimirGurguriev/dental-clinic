@@ -5,9 +5,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Toast
 import androidx.fragment.app.Fragment
-import com.google.firebase.auth.FirebaseAuth
 import com.velimir_gurguriev.dentalclinic.activities.EditProfileActivity
 import com.velimir_gurguriev.dentalclinic.activities.WelcomeActivity
 import com.velimir_gurguriev.dentalclinic.databinding.FragmentUserProfileBinding
@@ -15,11 +13,15 @@ import com.velimir_gurguriev.dentalclinic.models.User
 import com.velimir_gurguriev.dentalclinic.repositories.AuthRepository
 import com.velimir_gurguriev.dentalclinic.repositories.UserRepository
 import com.velimir_gurguriev.dentalclinic.services.UserProfileService
+import com.velimir_gurguriev.dentalclinic.utils.ui.SnackbarUtils
 
 class UserProfileFragment : Fragment() {
 
     private lateinit var binding: FragmentUserProfileBinding
+
     private lateinit var userProfileService: UserProfileService
+
+    private lateinit var authRepository: AuthRepository
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -27,11 +29,12 @@ class UserProfileFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View {
 
-        binding = FragmentUserProfileBinding.inflate(
-            inflater,
-            container,
-            false
-        )
+        binding =
+            FragmentUserProfileBinding.inflate(
+                inflater,
+                container,
+                false
+            )
 
         return binding.root
     }
@@ -40,7 +43,10 @@ class UserProfileFragment : Fragment() {
         view: View,
         savedInstanceState: Bundle?
     ) {
-        super.onViewCreated(view, savedInstanceState)
+        super.onViewCreated(
+            view,
+            savedInstanceState
+        )
 
         initializeDependencies()
         setupClickListeners()
@@ -56,65 +62,63 @@ class UserProfileFragment : Fragment() {
     }
 
     private fun initializeDependencies() {
+        authRepository = AuthRepository()
 
-        val userRepository = UserRepository()
-        val authRepository = AuthRepository()
-
-        userProfileService = UserProfileService(
-            userRepository,
-            authRepository
-        )
+        userProfileService =
+            UserProfileService(
+                repository = UserRepository(),
+                authRepository = authRepository
+            )
     }
 
     private fun setupClickListeners() {
+        binding.editProfileButton
+            .setOnClickListener {
+                openEditProfile()
+            }
 
-        binding.editProfileButton.setOnClickListener {
-            openEditProfile()
-        }
-
-        binding.logoutButton.setOnClickListener {
-            logout()
-        }
+        binding.logoutButton
+            .setOnClickListener {
+                logout()
+            }
     }
 
     private fun openEditProfile() {
-
-        val intent = Intent(
-            requireContext(),
-            EditProfileActivity::class.java
-        )
+        val intent =
+            Intent(
+                requireContext(),
+                EditProfileActivity::class.java
+            )
 
         startActivity(intent)
     }
 
     private fun loadUserProfile() {
-
-        val currentUser = FirebaseAuth.getInstance().currentUser
-
-        if (currentUser == null) {
-            showMessage("No user logged in.")
-            return
-        }
+        val currentUserId =
+            getCurrentUserId()
+                ?: return
 
         userProfileService.loadCurrentUser(
-            currentUser.uid,
-            { user ->
+            currentUserId,
+            onSuccess = { user ->
                 showUser(user)
             },
-            {
-                showMessage("Profile cannot be loaded.")
+            onFailure = {
+                showMessage(
+                    "Профилът не може да бъде зареден."
+                )
             }
         )
     }
 
     private fun logout() {
-
         userProfileService.logout()
 
-        val intent = Intent(
-            requireContext(),
-            WelcomeActivity::class.java
-        )
+        val intent =
+            Intent(
+                requireContext(),
+                WelcomeActivity::class.java
+            )
 
         intent.flags =
             Intent.FLAG_ACTIVITY_NEW_TASK or
@@ -123,19 +127,34 @@ class UserProfileFragment : Fragment() {
         startActivity(intent)
     }
 
-    private fun showUser(user: User) {
-
+    private fun showUser(
+        user: User
+    ) {
         binding.usernameTextView.text = user.name
+
         binding.emailTextView.text = user.email
+
         binding.roleTextView.text = user.accountType
     }
 
-    private fun showMessage(message: String) {
+    private fun getCurrentUserId(): String? {
+        val userId = authRepository.getCurrentUserId()
 
-        Toast.makeText(
-            requireContext(),
-            message,
-            Toast.LENGTH_SHORT
-        ).show()
+        if (userId == null) {
+            showMessage(
+                "Няма влязъл потребител."
+            )
+        }
+
+        return userId
+    }
+
+    private fun showMessage(
+        message: String
+    ) {
+        SnackbarUtils.show(
+            rootView = binding.root,
+            message = message
+        )
     }
 }
