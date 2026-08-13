@@ -1,25 +1,30 @@
 package com.velimir_gurguriev.dentalclinic
 
 import android.os.Bundle
-import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.navigation.NavController
 import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.ui.setupWithNavController
-import com.google.firebase.auth.FirebaseAuth
 import com.velimir_gurguriev.dentalclinic.databinding.ActivityMainBinding
+import com.velimir_gurguriev.dentalclinic.repositories.AuthRepository
 import com.velimir_gurguriev.dentalclinic.repositories.UserRepository
+import com.velimir_gurguriev.dentalclinic.utils.ui.SnackbarUtils
+
 class MainActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMainBinding
-
     private lateinit var navController: NavController
+    private lateinit var authRepository: AuthRepository
     private lateinit var userRepository: UserRepository
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        binding = ActivityMainBinding.inflate(layoutInflater)
+        binding =
+            ActivityMainBinding.inflate(
+                layoutInflater
+            )
+
         setContentView(binding.root)
 
         initializeDependencies()
@@ -28,76 +33,112 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun initializeDependencies() {
+        authRepository = AuthRepository()
+
         userRepository = UserRepository()
     }
 
     private fun initializeNavigation() {
-        val navHostFragment = supportFragmentManager
-            .findFragmentById(R.id.navHostFragment) as NavHostFragment
+        val navHostFragment =
+            supportFragmentManager
+                .findFragmentById(
+                    R.id.navHostFragment
+                ) as NavHostFragment
 
         navController = navHostFragment.navController
     }
 
     private fun loadBottomNavigationMenu() {
-        val currentUserId = FirebaseAuth.getInstance()
-            .currentUser
-            ?.uid
-
-        if (currentUserId == null) {
-            showMessage("Потребителят не е вписан.")
-            return
-        }
+        val currentUserId =
+            getCurrentUserId()
+                ?: return
 
         userRepository.getUserById(
             uid = currentUserId,
             onSuccess = { user ->
-                setupBottomNavigation(user.accountType)
+                setupBottomNavigation(
+                    user.accountType
+                )
             },
             onFailure = {
-                showMessage("Неуспешно зареждане на потребителския профил.")
+                showMessage(
+                    "Неуспешно зареждане на потребителския профил."
+                )
             }
         )
     }
 
-    private fun setupBottomNavigation(accountType: String) {
+    private fun setupBottomNavigation(
+        accountType: String
+    ) {
         binding.bottomNavigation.menu.clear()
 
-        if (isDentist(accountType)) {
-            binding.bottomNavigation.inflateMenu(
+        val menuResource =
+            if (isDentist(accountType)) {
                 R.menu.bottom_navigation_dentist_menu
-            )
-        } else {
-            binding.bottomNavigation.inflateMenu(
+            } else {
                 R.menu.bottom_navigation_patient_menu
-            )
-        }
+            }
 
-        binding.bottomNavigation.setupWithNavController(navController)
+        binding.bottomNavigation.inflateMenu(
+            menuResource
+        )
+
+        binding.bottomNavigation
+            .setupWithNavController(
+                navController
+            )
 
         setupDestinationListener()
     }
 
-    private fun isDentist(accountType: String): Boolean {
-        return accountType.equals("dentist", ignoreCase = true) ||
-                accountType.equals("стоматолог", ignoreCase = true)
+    private fun isDentist(
+        accountType: String
+    ): Boolean {
+        return accountType.equals(
+            "dentist",
+            ignoreCase = true
+        )
     }
 
     private fun setupDestinationListener() {
-        navController.addOnDestinationChangedListener { _, destination, _ ->
+        navController
+            .addOnDestinationChangedListener {
+                    _,
+                    destination,
+                    _ ->
 
-            if (destination.id == R.id.dentistDetailsFragment) {
-                binding.bottomNavigation.menu
-                    .findItem(R.id.dentistFragment)
-                    ?.isChecked = true
+                if (
+                    destination.id ==
+                    R.id.dentistDetailsFragment
+                ) {
+                    binding.bottomNavigation.menu
+                        .findItem(
+                            R.id.dentistFragment
+                        )
+                        ?.isChecked = true
+                }
             }
-        }
     }
 
-    private fun showMessage(message: String) {
-        Toast.makeText(
-            this,
-            message,
-            Toast.LENGTH_SHORT
-        ).show()
+    private fun getCurrentUserId(): String? {
+        val userId = authRepository.getCurrentUserId()
+
+        if (userId == null) {
+            showMessage(
+                "Потребителят не е вписан."
+            )
+        }
+
+        return userId
+    }
+
+    private fun showMessage(
+        message: String
+    ) {
+        SnackbarUtils.show(
+            rootView = binding.root,
+            message = message
+        )
     }
 }
