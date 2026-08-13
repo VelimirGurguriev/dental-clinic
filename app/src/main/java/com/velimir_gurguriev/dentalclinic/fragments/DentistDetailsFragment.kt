@@ -4,14 +4,14 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Toast
 import androidx.fragment.app.Fragment
-import com.google.firebase.auth.FirebaseAuth
 import com.velimir_gurguriev.dentalclinic.databinding.FragmentDentistDetailsBinding
+import com.velimir_gurguriev.dentalclinic.repositories.AuthRepository
 import com.velimir_gurguriev.dentalclinic.repositories.DentistPatientConnectionRepository
 import com.velimir_gurguriev.dentalclinic.repositories.UserRepository
 import com.velimir_gurguriev.dentalclinic.services.DentistsService
 import com.velimir_gurguriev.dentalclinic.services.connections.DentistPatientConnectionService
+import com.velimir_gurguriev.dentalclinic.utils.ui.SnackbarUtils
 
 class DentistDetailsFragment : Fragment() {
 
@@ -21,6 +21,8 @@ class DentistDetailsFragment : Fragment() {
 
     private lateinit var connectionService: DentistPatientConnectionService
 
+    private lateinit var authRepository: AuthRepository
+
     private lateinit var dentistUid: String
 
     override fun onCreateView(
@@ -28,12 +30,12 @@ class DentistDetailsFragment : Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-
-        binding = FragmentDentistDetailsBinding.inflate(
-            inflater,
-            container,
-            false
-        )
+        binding =
+            FragmentDentistDetailsBinding.inflate(
+                inflater,
+                container,
+                false
+            )
 
         return binding.root
     }
@@ -42,7 +44,10 @@ class DentistDetailsFragment : Fragment() {
         view: View,
         savedInstanceState: Bundle?
     ) {
-        super.onViewCreated(view, savedInstanceState)
+        super.onViewCreated(
+            view,
+            savedInstanceState
+        )
 
         initializeDependencies()
         readArguments()
@@ -51,54 +56,63 @@ class DentistDetailsFragment : Fragment() {
     }
 
     private fun initializeDependencies() {
+        authRepository = AuthRepository()
 
         val userRepository = UserRepository()
-        dentistsService = DentistsService(userRepository)
 
-        val connectionRepository =
-            DentistPatientConnectionRepository()
+        dentistsService =
+            DentistsService(
+                userRepository
+            )
 
         connectionService =
             DentistPatientConnectionService(
-                connectionRepository
+                connectionRepository = DentistPatientConnectionRepository(),
+                userRepository = userRepository
             )
     }
 
     private fun readArguments() {
-        dentistUid = requireArguments().getString("dentistUid")
-            ?: throw IllegalArgumentException("Dentist UID is missing.")
+        dentistUid =
+            requireArguments()
+                .getString(
+                    DENTIST_UID_ARGUMENT
+                )
+                ?: throw IllegalArgumentException(
+                    "Липсва ID на стоматолога."
+                )
+    }
+
+    private fun setupClickListeners() {
+        binding.requestPatientButton
+            .setOnClickListener {
+                sendPatientRequest()
+            }
     }
 
     private fun loadDentist() {
         dentistsService.getDentistById(
-            dentistUid,
-            { dentist ->
+            uid = dentistUid,
+            onSuccess = { dentist ->
+
                 binding.dentistNameTextView.text = dentist.name
+
                 binding.dentistEmailTextView.text = dentist.email
+
                 binding.dentistRoleTextView.text = dentist.accountType
             },
-            {
-                showMessage("Неуспешно зареждане на стоматолога.")
+            onFailure = {
+                showMessage(
+                    "Неуспешно зареждане на стоматолога."
+                )
             }
         )
     }
 
-    private fun setupClickListeners() {
-        binding.requestPatientButton.setOnClickListener {
-            sendPatientRequest()
-        }
-    }
-
     private fun sendPatientRequest() {
-
-        val patientId = FirebaseAuth.getInstance()
-            .currentUser
-            ?.uid
-
-        if (patientId == null) {
-            showMessage("Потребителят не е вписан.")
-            return
-        }
+        val patientId =
+            getCurrentPatientId()
+                ?: return
 
         connectionService
             .sendConnectionRequest(
@@ -106,12 +120,17 @@ class DentistDetailsFragment : Fragment() {
                 dentistId = dentistUid
             )
             .addOnSuccessListener {
-                showMessage("Заявката е изпратена успешно.")
+
+                showMessage(
+                    "Заявката е изпратена успешно."
+                )
 
                 binding.requestPatientButton.isEnabled = false
+
                 binding.requestPatientButton.text = "Заявката е изпратена"
             }
             .addOnFailureListener { exception ->
+
                 showMessage(
                     exception.message
                         ?: "Възникна грешка при изпращане на заявката."
@@ -119,11 +138,30 @@ class DentistDetailsFragment : Fragment() {
             }
     }
 
-    private fun showMessage(message: String) {
-        Toast.makeText(
-            requireContext(),
-            message,
-            Toast.LENGTH_SHORT
-        ).show()
+    private fun getCurrentPatientId(): String? {
+        val patientId =
+            authRepository.getCurrentUserId()
+
+        if (patientId == null) {
+            showMessage(
+                "Потребителят не е вписан."
+            )
+        }
+
+        return patientId
+    }
+
+    private fun showMessage(
+        message: String
+    ) {
+        SnackbarUtils.show(
+            rootView = binding.root,
+            message = message
+        )
+    }
+
+    companion object {
+        private const val DENTIST_UID_ARGUMENT =
+            "dentistUid"
     }
 }
