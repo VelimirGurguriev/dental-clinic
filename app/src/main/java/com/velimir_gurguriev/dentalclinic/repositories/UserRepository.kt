@@ -5,14 +5,19 @@ import com.velimir_gurguriev.dentalclinic.models.User
 
 class UserRepository {
 
-    private val database: FirebaseFirestore = FirebaseFirestore.getInstance()
+    private val database = FirebaseFirestore.getInstance()
+
+    private val usersCollection =
+        database.collection(
+            USERS_COLLECTION
+        )
 
     fun saveUserProfile(
         user: User,
         onSuccess: () -> Unit,
         onFailure: (Exception) -> Unit
     ) {
-        database.collection("users")
+        usersCollection
             .document(user.uid)
             .set(user)
             .addOnSuccessListener {
@@ -28,34 +33,47 @@ class UserRepository {
         onSuccess: (User) -> Unit,
         onFailure: (Exception) -> Unit
     ) {
-
-        database.collection("users")
+        usersCollection
             .document(uid)
             .get()
-            .addOnSuccessListener {
+            .addOnSuccessListener { document ->
 
-                val user = it.toObject(User::class.java)
+                val user =
+                    document.toObject(
+                        User::class.java
+                    )
 
-                if (user != null)
+                if (user != null) {
                     onSuccess(user)
-
+                } else {
+                    onFailure(
+                        IllegalStateException(
+                            "Потребителят не е намерен."
+                        )
+                    )
+                }
             }
-            .addOnFailureListener(onFailure)
-
+            .addOnFailureListener { exception ->
+                onFailure(exception)
+            }
     }
-
-
 
     fun getAllDentists(
         onSuccess: (List<User>) -> Unit,
         onFailure: (Exception) -> Unit
     ) {
-        database.collection("users")
-            .whereEqualTo("accountType", "dentist")
+        usersCollection
+            .whereEqualTo(
+                ACCOUNT_TYPE_FIELD,
+                DENTIST_ACCOUNT_TYPE
+            )
             .get()
             .addOnSuccessListener { result ->
 
-                val dentists = result.toObjects(User::class.java)
+                val dentists =
+                    result.toObjects(
+                        User::class.java
+                    )
 
                 onSuccess(dentists)
             }
@@ -70,14 +88,27 @@ class UserRepository {
         onSuccess: () -> Unit,
         onFailure: (Exception) -> Unit
     ) {
-        database.collection("users")
+        usersCollection
             .document(uid)
-            .update("name", name)
+            .update(
+                NAME_FIELD,
+                name
+            )
             .addOnSuccessListener {
                 onSuccess()
             }
             .addOnFailureListener { exception ->
                 onFailure(exception)
             }
+    }
+
+    companion object {
+        private const val USERS_COLLECTION = "users"
+
+        private const val ACCOUNT_TYPE_FIELD = "accountType"
+
+        private const val NAME_FIELD = "name"
+
+        private const val DENTIST_ACCOUNT_TYPE = "dentist"
     }
 }
