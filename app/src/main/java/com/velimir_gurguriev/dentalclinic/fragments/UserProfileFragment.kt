@@ -50,7 +50,6 @@ class UserProfileFragment : Fragment() {
 
         initializeDependencies()
         setupClickListeners()
-        loadUserProfile()
     }
 
     override fun onResume() {
