@@ -24,7 +24,8 @@ import java.util.Calendar
 
 class AppointmentFragment : Fragment() {
 
-    private lateinit var binding: FragmentAppointmentBinding
+    private var _binding: FragmentAppointmentBinding? = null
+    private val binding: FragmentAppointmentBinding get() = _binding!!
     private lateinit var appointmentService: AppointmentService
     private lateinit var timeSlotAdapter: TimeSlotAdapter
 
@@ -38,18 +39,37 @@ class AppointmentFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View {
 
-        binding = FragmentAppointmentBinding.inflate(
-            inflater,
-            container,
-            false
+        _binding =
+            FragmentAppointmentBinding.inflate(
+                inflater,
+                container,
+                false
+            )
+
+        return binding.root
+    }
+
+    override fun onViewCreated(
+        view: View,
+        savedInstanceState: Bundle?
+    ) {
+        super.onViewCreated(
+            view,
+            savedInstanceState
         )
 
         initializeDependencies()
         setupRecyclerView()
         setupCalendar()
         setupClickListeners()
+    }
 
-        return binding.root
+    override fun onDestroyView() {
+        binding.appointmentSlotsRecyclerView.adapter = null
+
+        _binding = null
+
+        super.onDestroyView()
     }
 
     private fun initializeDependencies() {
@@ -172,8 +192,7 @@ class AppointmentFragment : Fragment() {
         val workingDayVisibility =
             if (isWeekend) View.GONE else View.VISIBLE
 
-        binding.weekendMessageTextView.visibility =
-            weekendVisibility
+        binding.weekendMessageTextView.visibility = weekendVisibility
 
         listOf(
             binding.selectTimeTitleTextView,
@@ -210,9 +229,7 @@ class AppointmentFragment : Fragment() {
     }
 
     private fun loadPublishedSlots() {
-        val dentistId =
-            getCurrentDentistId()
-                ?: return
+        val dentistId = getCurrentDentistId() ?: return
 
         appointmentService.getDentistSlotsForDate(
             dentistId = dentistId,
@@ -232,12 +249,9 @@ class AppointmentFragment : Fragment() {
     }
 
     private fun createSelectedAppointmentSlots() {
-        val dentistId =
-            getCurrentDentistId()
-                ?: return
+        val dentistId = getCurrentDentistId() ?: return
 
-        val selectedSlots =
-            timeSlotAdapter.getSelectedSlots()
+        val selectedSlots = timeSlotAdapter.getSelectedSlots()
 
         if (selectedSlots.isEmpty()) {
             showMessage(
@@ -254,6 +268,10 @@ class AppointmentFragment : Fragment() {
             timeSlots = selectedSlots
         )
             .addOnSuccessListener {
+                if (_binding == null) {
+                    return@addOnSuccessListener
+                }
+
                 setCreationLoadingState(false)
 
                 timeSlotAdapter.clearSelection()
@@ -264,6 +282,10 @@ class AppointmentFragment : Fragment() {
                 )
             }
             .addOnFailureListener { exception ->
+                if (_binding == null) {
+                    return@addOnFailureListener
+                }
+
                 setCreationLoadingState(false)
 
                 showMessage(
@@ -274,9 +296,7 @@ class AppointmentFragment : Fragment() {
     }
 
     private fun confirmAppointmentSlotCancellation() {
-        val selectedSlots =
-            timeSlotAdapter
-                .getSelectedSlotsForCancellation()
+        val selectedSlots = timeSlotAdapter.getSelectedSlotsForCancellation()
 
         if (selectedSlots.isEmpty()) {
             showMessage(
@@ -308,6 +328,10 @@ class AppointmentFragment : Fragment() {
             timeSlots = selectedSlots
         )
             .addOnSuccessListener {
+                if (_binding == null) {
+                    return@addOnSuccessListener
+                }
+
                 setCancellationLoadingState(false)
 
                 timeSlotAdapter.clearSelection()
@@ -318,6 +342,10 @@ class AppointmentFragment : Fragment() {
                 )
             }
             .addOnFailureListener { exception ->
+                if (_binding == null) {
+                    return@addOnFailureListener
+                }
+
                 setCancellationLoadingState(false)
 
                 showMessage(
@@ -340,17 +368,13 @@ class AppointmentFragment : Fragment() {
     private fun setAppointmentControlsEnabled(
         isEnabled: Boolean
     ) {
-        binding.createAppointmentSlotsButton.isEnabled =
-            isEnabled
+        binding.createAppointmentSlotsButton.isEnabled = isEnabled
 
-        binding.removeAppointmentSlotButton.isEnabled =
-            isEnabled
+        binding.removeAppointmentSlotButton.isEnabled = isEnabled
 
-        binding.selectAllSlotsButton.isEnabled =
-            isEnabled
+        binding.selectAllSlotsButton.isEnabled = isEnabled
 
-        binding.deselectAllSlotsButton.isEnabled =
-            isEnabled
+        binding.deselectAllSlotsButton.isEnabled = isEnabled
     }
 
     private fun setCreationLoadingState(
@@ -399,8 +423,10 @@ class AppointmentFragment : Fragment() {
     private fun showMessage(
         message: String
     ) {
+        val currentBinding = _binding ?: return
+
         SnackbarUtils.show(
-            rootView = binding.root,
+            rootView = currentBinding.root,
             message = message
         )
     }

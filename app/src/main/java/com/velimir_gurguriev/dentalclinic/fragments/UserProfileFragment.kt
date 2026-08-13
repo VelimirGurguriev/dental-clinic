@@ -17,10 +17,9 @@ import com.velimir_gurguriev.dentalclinic.utils.ui.SnackbarUtils
 
 class UserProfileFragment : Fragment() {
 
-    private lateinit var binding: FragmentUserProfileBinding
-
+    private var _binding: FragmentUserProfileBinding? = null
+    private val binding: FragmentUserProfileBinding get() = _binding!!
     private lateinit var userProfileService: UserProfileService
-
     private lateinit var authRepository: AuthRepository
 
     override fun onCreateView(
@@ -29,7 +28,7 @@ class UserProfileFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View {
 
-        binding =
+        _binding =
             FragmentUserProfileBinding.inflate(
                 inflater,
                 container,
@@ -50,6 +49,12 @@ class UserProfileFragment : Fragment() {
 
         initializeDependencies()
         setupClickListeners()
+    }
+
+    override fun onDestroyView() {
+        _binding = null
+
+        super.onDestroyView()
     }
 
     override fun onResume() {
@@ -129,11 +134,13 @@ class UserProfileFragment : Fragment() {
     private fun showUser(
         user: User
     ) {
-        binding.usernameTextView.text = user.name
+        val currentBinding = _binding ?: return
 
-        binding.emailTextView.text = user.email
+        currentBinding.usernameTextView.text = user.name
 
-        binding.roleTextView.text = user.accountType
+        currentBinding.emailTextView.text = user.email
+
+        currentBinding.roleTextView.text = user.accountType
     }
 
     private fun getCurrentUserId(): String? {
@@ -151,8 +158,10 @@ class UserProfileFragment : Fragment() {
     private fun showMessage(
         message: String
     ) {
+        val currentBinding = _binding ?: return
+
         SnackbarUtils.show(
-            rootView = binding.root,
+            rootView = currentBinding.root,
             message = message
         )
     }

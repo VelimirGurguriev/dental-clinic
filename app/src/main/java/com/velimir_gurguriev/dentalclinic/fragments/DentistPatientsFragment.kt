@@ -19,14 +19,11 @@ import com.velimir_gurguriev.dentalclinic.utils.ui.SnackbarUtils
 
 class DentistPatientsFragment : Fragment() {
 
-    private lateinit var binding: FragmentPatientRequestsBinding
-
+    private var _binding: FragmentPatientRequestsBinding? = null
+    private val binding: FragmentPatientRequestsBinding get() = _binding!!
     private lateinit var connectionService: DentistPatientConnectionService
-
     private lateinit var authRepository: AuthRepository
-
     private lateinit var patientRequestAdapter: PatientRequestAdapter
-
     private lateinit var dentistPatientAdapter: DentistPatientAdapter
 
     override fun onCreateView(
@@ -35,19 +32,41 @@ class DentistPatientsFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View {
 
-        binding =
+        _binding =
             FragmentPatientRequestsBinding.inflate(
                 inflater,
                 container,
                 false
             )
 
+        return binding.root
+    }
+
+    override fun onViewCreated(
+        view: View,
+        savedInstanceState: Bundle?
+    ) {
+        super.onViewCreated(
+            view,
+            savedInstanceState
+        )
+
         initializeDependencies()
         setupRecyclerViews()
         loadPendingRequests()
         loadApprovedPatients()
+    }
 
-        return binding.root
+    override fun onDestroyView() {
+        binding.patientRequestsRecyclerView.adapter =
+            null
+
+        binding.approvedPatientsRecyclerView.adapter =
+            null
+
+        _binding = null
+
+        super.onDestroyView()
     }
 
     private fun initializeDependencies() {
@@ -55,10 +74,8 @@ class DentistPatientsFragment : Fragment() {
 
         connectionService =
             DentistPatientConnectionService(
-                connectionRepository =
-                    DentistPatientConnectionRepository(),
-                userRepository =
-                    UserRepository()
+                connectionRepository = DentistPatientConnectionRepository(),
+                userRepository = UserRepository()
             )
     }
 
@@ -85,8 +102,7 @@ class DentistPatientsFragment : Fragment() {
                     requireContext()
                 )
 
-            adapter =
-                patientRequestAdapter
+            adapter = patientRequestAdapter
         }
     }
 
@@ -107,21 +123,21 @@ class DentistPatientsFragment : Fragment() {
                     requireContext()
                 )
 
-            adapter =
-                dentistPatientAdapter
+            adapter = dentistPatientAdapter
         }
     }
 
     private fun loadPendingRequests() {
-        val dentistId =
-            getCurrentDentistId()
-                ?: return
+        val dentistId = getCurrentDentistId() ?: return
 
         connectionService
             .getPendingRequestsForDentist(
                 dentistId
             )
             .addOnSuccessListener { requests ->
+                if (_binding == null) {
+                    return@addOnSuccessListener
+                }
 
                 patientRequestAdapter.updateRequests(
                     requests
@@ -142,9 +158,7 @@ class DentistPatientsFragment : Fragment() {
     }
 
     private fun loadApprovedPatients() {
-        val dentistId =
-            getCurrentDentistId()
-                ?: return
+        val dentistId = getCurrentDentistId() ?: return
 
         connectionService
             .getApprovedPatientsForDentist(
@@ -172,6 +186,9 @@ class DentistPatientsFragment : Fragment() {
                 request.connectionId
             )
             .addOnSuccessListener {
+                if (_binding == null) {
+                    return@addOnSuccessListener
+                }
 
                 patientRequestAdapter.removeRequest(
                     request
@@ -206,6 +223,9 @@ class DentistPatientsFragment : Fragment() {
                 request.connectionId
             )
             .addOnSuccessListener {
+                if (_binding == null) {
+                    return@addOnSuccessListener
+                }
 
                 patientRequestAdapter.removeRequest(
                     request
@@ -224,8 +244,7 @@ class DentistPatientsFragment : Fragment() {
     }
 
     private fun getCurrentDentistId(): String? {
-        val dentistId =
-            authRepository.getCurrentUserId()
+        val dentistId = authRepository.getCurrentUserId()
 
         if (dentistId == null) {
             showMessage(
@@ -239,8 +258,10 @@ class DentistPatientsFragment : Fragment() {
     private fun showMessage(
         message: String
     ) {
+        val currentBinding = _binding ?: return
+
         SnackbarUtils.show(
-            rootView = binding.root,
+            rootView = currentBinding.root,
             message = message
         )
     }

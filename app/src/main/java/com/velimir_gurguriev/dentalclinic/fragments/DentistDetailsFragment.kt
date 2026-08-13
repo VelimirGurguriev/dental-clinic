@@ -15,14 +15,11 @@ import com.velimir_gurguriev.dentalclinic.utils.ui.SnackbarUtils
 
 class DentistDetailsFragment : Fragment() {
 
-    private lateinit var binding: FragmentDentistDetailsBinding
-
+    private var _binding: FragmentDentistDetailsBinding? = null
+    private val binding: FragmentDentistDetailsBinding get() = _binding!!
     private lateinit var dentistService: DentistService
-
     private lateinit var connectionService: DentistPatientConnectionService
-
     private lateinit var authRepository: AuthRepository
-
     private lateinit var dentistUid: String
 
     override fun onCreateView(
@@ -30,7 +27,8 @@ class DentistDetailsFragment : Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        binding =
+
+        _binding =
             FragmentDentistDetailsBinding.inflate(
                 inflater,
                 container,
@@ -53,6 +51,12 @@ class DentistDetailsFragment : Fragment() {
         readArguments()
         setupClickListeners()
         loadDentist()
+    }
+
+    override fun onDestroyView() {
+        _binding = null
+
+        super.onDestroyView()
     }
 
     private fun initializeDependencies() {
@@ -94,12 +98,13 @@ class DentistDetailsFragment : Fragment() {
         dentistService.getDentistById(
             uid = dentistUid,
             onSuccess = { dentist ->
+                val currentBinding = _binding ?: return@getDentistById
 
-                binding.dentistNameTextView.text = dentist.name
+                currentBinding.dentistNameTextView.text = dentist.name
 
-                binding.dentistEmailTextView.text = dentist.email
+                currentBinding.dentistEmailTextView.text = dentist.email
 
-                binding.dentistRoleTextView.text = dentist.accountType
+                currentBinding.dentistRoleTextView.text = dentist.accountType
             },
             onFailure = {
                 showMessage(
@@ -110,9 +115,7 @@ class DentistDetailsFragment : Fragment() {
     }
 
     private fun sendPatientRequest() {
-        val patientId =
-            getCurrentPatientId()
-                ?: return
+        val patientId = getCurrentPatientId() ?: return
 
         connectionService
             .sendConnectionRequest(
@@ -120,17 +123,18 @@ class DentistDetailsFragment : Fragment() {
                 dentistId = dentistUid
             )
             .addOnSuccessListener {
+                val currentBinding = _binding ?: return@addOnSuccessListener
 
                 showMessage(
                     "Заявката е изпратена успешно."
                 )
 
-                binding.requestPatientButton.isEnabled = false
+                currentBinding.requestPatientButton.isEnabled = false
 
-                binding.requestPatientButton.text = "Заявката е изпратена"
+                currentBinding.requestPatientButton.text =
+                    "Заявката е изпратена"
             }
             .addOnFailureListener { exception ->
-
                 showMessage(
                     exception.message
                         ?: "Възникна грешка при изпращане на заявката."
@@ -154,8 +158,10 @@ class DentistDetailsFragment : Fragment() {
     private fun showMessage(
         message: String
     ) {
+        val currentBinding = _binding ?: return
+
         SnackbarUtils.show(
-            rootView = binding.root,
+            rootView = currentBinding.root,
             message = message
         )
     }

@@ -14,11 +14,12 @@ import com.velimir_gurguriev.dentalclinic.databinding.FragmentDentistsBinding
 import com.velimir_gurguriev.dentalclinic.models.User
 import com.velimir_gurguriev.dentalclinic.repositories.UserRepository
 import com.velimir_gurguriev.dentalclinic.services.dentists.DentistService
+import com.velimir_gurguriev.dentalclinic.utils.ui.SnackbarUtils
 
 class DentistsFragment : Fragment() {
 
-    private lateinit var binding: FragmentDentistsBinding
-
+    private var _binding: FragmentDentistsBinding? = null
+    private val binding: FragmentDentistsBinding get() = _binding!!
     private lateinit var dentistService: DentistService
 
     override fun onCreateView(
@@ -27,11 +28,12 @@ class DentistsFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View {
 
-        binding = FragmentDentistsBinding.inflate(
-            inflater,
-            container,
-            false
-        )
+        _binding =
+            FragmentDentistsBinding.inflate(
+                inflater,
+                container,
+                false
+            )
 
         return binding.root
     }
@@ -40,11 +42,23 @@ class DentistsFragment : Fragment() {
         view: View,
         savedInstanceState: Bundle?
     ) {
-        super.onViewCreated(view, savedInstanceState)
+        super.onViewCreated(
+            view,
+            savedInstanceState
+        )
 
         initializeDependencies()
         setupRecyclerView()
         loadDentists()
+    }
+
+    override fun onDestroyView() {
+        binding.dentistsRecyclerView.adapter =
+            null
+
+        _binding = null
+
+        super.onDestroyView()
     }
 
     private fun initializeDependencies() {
@@ -59,24 +73,35 @@ class DentistsFragment : Fragment() {
 
     private fun loadDentists() {
         dentistService.getAllDentists(
-            { dentists ->
-                binding.dentistsRecyclerView.adapter =
-                    DentistAdapter(dentists) { dentist ->
-                        openDentistDetails(dentist)
+            onSuccess = { dentists ->
+                val currentBinding = _binding ?: return@getAllDentists
+
+                currentBinding.dentistsRecyclerView.adapter =
+                    DentistAdapter(
+                        dentists
+                    ) { dentist ->
+                        openDentistDetails(
+                            dentist
+                        )
                     }
             },
-            {
-                showMessage("Failed to load dentists.")
+            onFailure = {
+                showMessage(
+                    "Неуспешно зареждане на стоматолозите."
+                )
             }
         )
     }
 
-    private fun showMessage(message: String) {
-        Toast.makeText(
-            requireContext(),
-            message,
-            Toast.LENGTH_SHORT
-        ).show()
+    private fun showMessage(
+        message: String
+    ) {
+        val currentBinding = _binding ?: return
+
+        SnackbarUtils.show(
+            rootView = currentBinding.root,
+            message = message
+        )
     }
 
     private fun openDentistDetails(dentist: User) {
