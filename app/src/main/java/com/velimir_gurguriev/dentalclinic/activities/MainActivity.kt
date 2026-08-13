@@ -1,10 +1,11 @@
-package com.velimir_gurguriev.dentalclinic
+package com.velimir_gurguriev.dentalclinic.activities
 
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.navigation.NavController
 import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.ui.setupWithNavController
+import com.velimir_gurguriev.dentalclinic.R
 import com.velimir_gurguriev.dentalclinic.databinding.ActivityMainBinding
 import com.velimir_gurguriev.dentalclinic.repositories.AuthRepository
 import com.velimir_gurguriev.dentalclinic.repositories.UserRepository

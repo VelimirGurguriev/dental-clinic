@@ -3,7 +3,7 @@ package com.velimir_gurguriev.dentalclinic.activities
 import android.content.Intent
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
-import com.velimir_gurguriev.dentalclinic.MainActivity
+import com.velimir_gurguriev.dentalclinic.activities.MainActivity
 import com.velimir_gurguriev.dentalclinic.databinding.ActivityLoginBinding
 import com.velimir_gurguriev.dentalclinic.models.forms.LoginForm
 import com.velimir_gurguriev.dentalclinic.repositories.AuthRepository

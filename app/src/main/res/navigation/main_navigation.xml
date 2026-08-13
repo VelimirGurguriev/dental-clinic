@@ -43,7 +43,7 @@
 
     <fragment
         android:id="@+id/patientRequestsFragment"
-        android:name="com.velimir_gurguriev.dentalclinic.fragments.PatientRequestsFragment"
+        android:name="com.velimir_gurguriev.dentalclinic.fragments.DentistPatientsFragment"
         android:label="Заявки" />
 
 </navigation>

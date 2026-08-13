@@ -9,7 +9,7 @@ import com.velimir_gurguriev.dentalclinic.databinding.FragmentDentistDetailsBind
 import com.velimir_gurguriev.dentalclinic.repositories.AuthRepository
 import com.velimir_gurguriev.dentalclinic.repositories.DentistPatientConnectionRepository
 import com.velimir_gurguriev.dentalclinic.repositories.UserRepository
-import com.velimir_gurguriev.dentalclinic.services.DentistsService
+import com.velimir_gurguriev.dentalclinic.services.dentists.DentistService
 import com.velimir_gurguriev.dentalclinic.services.connections.DentistPatientConnectionService
 import com.velimir_gurguriev.dentalclinic.utils.ui.SnackbarUtils
 
@@ -17,7 +17,7 @@ class DentistDetailsFragment : Fragment() {
 
     private lateinit var binding: FragmentDentistDetailsBinding
 
-    private lateinit var dentistsService: DentistsService
+    private lateinit var dentistService: DentistService
 
     private lateinit var connectionService: DentistPatientConnectionService
 
@@ -60,8 +60,8 @@ class DentistDetailsFragment : Fragment() {
 
         val userRepository = UserRepository()
 
-        dentistsService =
-            DentistsService(
+        dentistService =
+            DentistService(
                 userRepository
             )
 
@@ -91,7 +91,7 @@ class DentistDetailsFragment : Fragment() {
     }
 
     private fun loadDentist() {
-        dentistsService.getDentistById(
+        dentistService.getDentistById(
             uid = dentistUid,
             onSuccess = { dentist ->
 

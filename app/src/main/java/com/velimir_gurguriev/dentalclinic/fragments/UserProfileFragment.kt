@@ -12,7 +12,7 @@ import com.velimir_gurguriev.dentalclinic.databinding.FragmentUserProfileBinding
 import com.velimir_gurguriev.dentalclinic.models.User
 import com.velimir_gurguriev.dentalclinic.repositories.AuthRepository
 import com.velimir_gurguriev.dentalclinic.repositories.UserRepository
-import com.velimir_gurguriev.dentalclinic.services.UserProfileService
+import com.velimir_gurguriev.dentalclinic.services.users.UserProfileService
 import com.velimir_gurguriev.dentalclinic.utils.ui.SnackbarUtils
 
 class UserProfileFragment : Fragment() {

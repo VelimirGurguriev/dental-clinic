@@ -1,9 +1,9 @@
-package com.velimir_gurguriev.dentalclinic.services
+package com.velimir_gurguriev.dentalclinic.services.dentists
 
 import com.velimir_gurguriev.dentalclinic.models.User
 import com.velimir_gurguriev.dentalclinic.repositories.UserRepository
 
-class DentistsService(
+class DentistService(
     private val userRepository: UserRepository
 ) {
 

@@ -1,4 +1,4 @@
-package com.velimir_gurguriev.dentalclinic.services
+package com.velimir_gurguriev.dentalclinic.services.users
 
 import com.velimir_gurguriev.dentalclinic.models.User
 import com.velimir_gurguriev.dentalclinic.repositories.AuthRepository

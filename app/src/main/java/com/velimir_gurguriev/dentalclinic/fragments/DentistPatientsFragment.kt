@@ -17,7 +17,7 @@ import com.velimir_gurguriev.dentalclinic.repositories.UserRepository
 import com.velimir_gurguriev.dentalclinic.services.connections.DentistPatientConnectionService
 import com.velimir_gurguriev.dentalclinic.utils.ui.SnackbarUtils
 
-class PatientRequestsFragment : Fragment() {
+class DentistPatientsFragment : Fragment() {
 
     private lateinit var binding: FragmentPatientRequestsBinding
 

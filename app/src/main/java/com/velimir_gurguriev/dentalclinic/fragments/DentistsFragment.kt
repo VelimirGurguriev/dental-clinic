@@ -13,13 +13,13 @@ import com.velimir_gurguriev.dentalclinic.adapters.DentistAdapter
 import com.velimir_gurguriev.dentalclinic.databinding.FragmentDentistsBinding
 import com.velimir_gurguriev.dentalclinic.models.User
 import com.velimir_gurguriev.dentalclinic.repositories.UserRepository
-import com.velimir_gurguriev.dentalclinic.services.DentistsService
+import com.velimir_gurguriev.dentalclinic.services.dentists.DentistService
 
 class DentistsFragment : Fragment() {
 
     private lateinit var binding: FragmentDentistsBinding
 
-    private lateinit var dentistsService: DentistsService
+    private lateinit var dentistService: DentistService
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -49,7 +49,7 @@ class DentistsFragment : Fragment() {
 
     private fun initializeDependencies() {
         val userRepository = UserRepository()
-        dentistsService = DentistsService(userRepository)
+        dentistService = DentistService(userRepository)
     }
 
     private fun setupRecyclerView() {
@@ -58,7 +58,7 @@ class DentistsFragment : Fragment() {
     }
 
     private fun loadDentists() {
-        dentistsService.getAllDentists(
+        dentistService.getAllDentists(
             { dentists ->
                 binding.dentistsRecyclerView.adapter =
                     DentistAdapter(dentists) { dentist ->
