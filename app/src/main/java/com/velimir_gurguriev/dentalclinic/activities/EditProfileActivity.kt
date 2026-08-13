@@ -1,93 +1,127 @@
 package com.velimir_gurguriev.dentalclinic.activities
 
 import android.os.Bundle
-import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import com.google.firebase.auth.FirebaseAuth
 import com.velimir_gurguriev.dentalclinic.databinding.ActivityEditProfileBinding
+import com.velimir_gurguriev.dentalclinic.repositories.AuthRepository
 import com.velimir_gurguriev.dentalclinic.repositories.UserRepository
+import com.velimir_gurguriev.dentalclinic.utils.ui.SnackbarUtils
 
 class EditProfileActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityEditProfileBinding
+    private lateinit var authRepository: AuthRepository
     private lateinit var userRepository: UserRepository
 
-    override fun onCreate(savedInstanceState: Bundle?) {
+    override fun onCreate(
+        savedInstanceState: Bundle?
+    ) {
         super.onCreate(savedInstanceState)
 
-        binding = ActivityEditProfileBinding.inflate(layoutInflater)
+        binding =
+            ActivityEditProfileBinding.inflate(
+                layoutInflater
+            )
+
         setContentView(binding.root)
 
-        userRepository = UserRepository()
-
-        loadCurrentUser()
+        initializeDependencies()
         setupClickListeners()
+        loadCurrentUser()
+    }
+
+    private fun initializeDependencies() {
+        authRepository = AuthRepository()
+
+        userRepository = UserRepository()
     }
 
     private fun setupClickListeners() {
-        binding.saveButton.setOnClickListener {
-            updateProfile()
-        }
+        binding.saveButton
+            .setOnClickListener {
+                updateProfile()
+            }
 
-        binding.cancelButton.setOnClickListener {
-            finish()
-        }
+        binding.cancelButton
+            .setOnClickListener {
+                finish()
+            }
     }
 
     private fun loadCurrentUser() {
-        val currentUser = FirebaseAuth.getInstance().currentUser
-
-        if (currentUser == null) {
-            showMessage("No user logged in.")
-            finish()
-            return
-        }
+        val userId = getCurrentUserId() ?: return
 
         userRepository.getUserById(
-            currentUser.uid,
-            { user ->
-                binding.nameInputField.setText(user.name)
-                binding.emailInputField.setText(user.email)
+            uid = userId,
+            onSuccess = { user ->
+
+                binding.nameInputField.setText(
+                    user.name
+                )
+
+                binding.emailInputField.setText(
+                    user.email
+                )
             },
-            {
-                showMessage("Profile cannot be loaded.")
+            onFailure = {
+                showMessage(
+                    "Профилът не може да бъде зареден."
+                )
             }
         )
     }
 
     private fun updateProfile() {
-        val currentUser = FirebaseAuth.getInstance().currentUser
+        val userId = getCurrentUserId() ?: return
 
-        if (currentUser == null) {
-            showMessage("No user logged in.")
-            return
-        }
-
-        val name = binding.nameInputField.text.toString().trim()
+        val name =
+            binding.nameInputField
+                .text
+                .toString()
+                .trim()
 
         if (name.isEmpty()) {
             binding.nameInputField.error = "Въведете име."
+
             return
         }
 
         userRepository.updateUserName(
-            currentUser.uid,
-            name,
-            {
-                showMessage("Профилът е обновен.")
+            uid = userId,
+            name = name,
+            onSuccess = {
+                showMessage(
+                    "Профилът е обновен."
+                )
+
                 finish()
             },
-            {
-                showMessage("Профилът не може да бъде обновен.")
+            onFailure = {
+                showMessage(
+                    "Профилът не може да бъде обновен."
+                )
             }
         )
     }
 
-    private fun showMessage(message: String) {
-        Toast.makeText(
-            this,
-            message,
-            Toast.LENGTH_SHORT
-        ).show()
+    private fun getCurrentUserId(): String? {
+        val userId = authRepository.getCurrentUserId()
+
+        if (userId == null) {
+            showMessage(
+                "Няма влязъл потребител."
+            )
+        }
+
+        return userId
+    }
+
+    private fun showMessage(
+        message: String
+    ) {
+        SnackbarUtils.show(
+            rootView = binding.root,
+            message = message
+        )
     }
 }
