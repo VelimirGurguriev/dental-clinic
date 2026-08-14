@@ -12,6 +12,12 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.DentalClinic">
         <activity
+            android:name=".activities.RegisterDentistActivity"
+            android:exported="false" />
+        <activity
+            android:name=".activities.RegisterPatientActivity"
+            android:exported="false" />
+        <activity
             android:name=".activities.EditProfileActivity"
             android:exported="false" />
         <activity

@@ -7,27 +7,63 @@
     android:layout_height="match_parent"
     tools:context=".activities.WelcomeActivity">
 
-    <Button
-        android:id="@+id/toLoginButton"
-        android:layout_width="wrap_content"
+    <LinearLayout
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Вход"
+        android:orientation="vertical"
+        android:padding="24dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.501"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.395" />
+        app:layout_constraintTop_toTopOf="parent">
 
-    <Button
-        android:id="@+id/toRegisterButton"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Регистрирай се"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.5"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.5" />
+        <Button
+            android:id="@+id/toLoginButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Вход" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginVertical="24dp"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <View
+                android:layout_width="0dp"
+                android:layout_height="1dp"
+                android:layout_weight="1"
+                android:background="#BDBDBD" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginHorizontal="16dp"
+                android:text="ИЛИ"
+                android:textSize="14sp" />
+
+            <View
+                android:layout_width="0dp"
+                android:layout_height="1dp"
+                android:layout_weight="1"
+                android:background="#BDBDBD" />
+
+        </LinearLayout>
+
+        <Button
+            android:id="@+id/toPatientRegisterButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Регистрирай се като пациент" />
+
+        <Button
+            android:id="@+id/toDentistRegisterButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:text="Регистрирай се като стоматолог" />
+
+    </LinearLayout>
+
 </androidx.constraintlayout.widget.ConstraintLayout>
