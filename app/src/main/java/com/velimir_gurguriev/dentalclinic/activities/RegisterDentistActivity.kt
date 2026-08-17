@@ -8,7 +8,7 @@ import com.velimir_gurguriev.dentalclinic.models.forms.DentistRegisterForm
 import com.velimir_gurguriev.dentalclinic.repositories.AuthRepository
 import com.velimir_gurguriev.dentalclinic.repositories.DentistRepository
 import com.velimir_gurguriev.dentalclinic.repositories.UserRepository
-import com.velimir_gurguriev.dentalclinic.services.users.RegisterUserService
+import com.velimir_gurguriev.dentalclinic.services.users.RegisterDentistService
 import com.velimir_gurguriev.dentalclinic.utils.ui.SnackbarUtils
 import com.velimir_gurguriev.dentalclinic.validators.register.DentistRegisterFormValidator
 
@@ -16,7 +16,7 @@ class RegisterDentistActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityRegisterDentistBinding
     private lateinit var registerFormValidator: DentistRegisterFormValidator
-    private lateinit var registerUserService: RegisterUserService
+    private lateinit var registerDentistService: RegisterDentistService
 
     override fun onCreate(
         savedInstanceState: Bundle?
@@ -35,11 +35,10 @@ class RegisterDentistActivity : AppCompatActivity() {
     }
 
     private fun initializeDependencies() {
-        registerFormValidator =
-            DentistRegisterFormValidator()
+        registerFormValidator = DentistRegisterFormValidator()
 
-        registerUserService =
-            RegisterUserService(
+        registerDentistService =
+            RegisterDentistService(
                 authRepository = AuthRepository(),
                 userRepository = UserRepository(),
                 dentistRepository = DentistRepository()
@@ -74,7 +73,7 @@ class RegisterDentistActivity : AppCompatActivity() {
             return
         }
 
-        registerUserService.registerDentist(
+        registerDentistService.register(
             form = form,
             onSuccess = {
                 openLogin()

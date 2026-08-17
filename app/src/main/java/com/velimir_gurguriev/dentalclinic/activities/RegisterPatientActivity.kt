@@ -9,7 +9,7 @@ import com.velimir_gurguriev.dentalclinic.models.forms.PatientRegisterForm
 import com.velimir_gurguriev.dentalclinic.repositories.AuthRepository
 import com.velimir_gurguriev.dentalclinic.repositories.PatientRepository
 import com.velimir_gurguriev.dentalclinic.repositories.UserRepository
-import com.velimir_gurguriev.dentalclinic.services.users.RegisterUserService
+import com.velimir_gurguriev.dentalclinic.services.users.RegisterPatientService
 import com.velimir_gurguriev.dentalclinic.utils.ui.SnackbarUtils
 import com.velimir_gurguriev.dentalclinic.validators.register.PatientRegisterFormValidator
 import java.text.SimpleDateFormat
@@ -20,7 +20,7 @@ class RegisterPatientActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityRegisterPatientBinding
     private lateinit var registerFormValidator: PatientRegisterFormValidator
-    private lateinit var registerUserService: RegisterUserService
+    private lateinit var registerPatientService: RegisterPatientService
 
     private var selectedDateOfBirth: Long = 0L
 
@@ -43,8 +43,8 @@ class RegisterPatientActivity : AppCompatActivity() {
     private fun initializeDependencies() {
         registerFormValidator = PatientRegisterFormValidator()
 
-        registerUserService =
-            RegisterUserService(
+        registerPatientService =
+            RegisterPatientService(
                 authRepository = AuthRepository(),
                 userRepository = UserRepository(),
                 patientRepository = PatientRepository()
@@ -116,7 +116,7 @@ class RegisterPatientActivity : AppCompatActivity() {
             return
         }
 
-        registerUserService.registerPatient(
+        registerPatientService.register(
             form = form,
             onSuccess = {
                 openLogin()
