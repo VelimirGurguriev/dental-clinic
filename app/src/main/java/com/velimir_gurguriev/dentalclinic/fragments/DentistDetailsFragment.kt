@@ -8,6 +8,7 @@ import androidx.fragment.app.Fragment
 import com.velimir_gurguriev.dentalclinic.databinding.FragmentDentistDetailsBinding
 import com.velimir_gurguriev.dentalclinic.repositories.AuthRepository
 import com.velimir_gurguriev.dentalclinic.repositories.DentistPatientConnectionRepository
+import com.velimir_gurguriev.dentalclinic.repositories.DentistRepository
 import com.velimir_gurguriev.dentalclinic.repositories.UserRepository
 import com.velimir_gurguriev.dentalclinic.services.dentists.DentistService
 import com.velimir_gurguriev.dentalclinic.services.connections.DentistPatientConnectionService
@@ -20,6 +21,7 @@ class DentistDetailsFragment : Fragment() {
     private lateinit var dentistService: DentistService
     private lateinit var connectionService: DentistPatientConnectionService
     private lateinit var authRepository: AuthRepository
+    private lateinit var dentistRepository: DentistRepository
     private lateinit var dentistUid: String
 
     override fun onCreateView(
@@ -64,6 +66,8 @@ class DentistDetailsFragment : Fragment() {
 
         val userRepository = UserRepository()
 
+        dentistRepository = DentistRepository()
+
         dentistService =
             DentistService(
                 userRepository
@@ -95,20 +99,51 @@ class DentistDetailsFragment : Fragment() {
     }
 
     private fun loadDentist() {
+        loadDentistUser()
+        loadDentistProfile()
+    }
+
+    private fun loadDentistUser() {
         dentistService.getDentistById(
             uid = dentistUid,
             onSuccess = { dentist ->
-                val currentBinding = _binding ?: return@getDentistById
+                val currentBinding =
+                    _binding
+                        ?: return@getDentistById
 
                 currentBinding.dentistNameTextView.text = dentist.name
 
                 currentBinding.dentistEmailTextView.text = dentist.email
 
-                currentBinding.dentistRoleTextView.text = dentist.accountType
+                currentBinding.dentistPhoneTextView.text = dentist.phone
+
+                currentBinding.dentistCityTextView.text = dentist.city
             },
             onFailure = {
                 showMessage(
                     "Неуспешно зареждане на стоматолога."
+                )
+            }
+        )
+    }
+
+    private fun loadDentistProfile() {
+        dentistRepository.getDentistProfileById(
+            uid = dentistUid,
+            onSuccess = { dentistProfile ->
+                val currentBinding =
+                    _binding
+                        ?: return@getDentistProfileById
+
+                currentBinding.dentistSpecializationTextView.text = dentistProfile.specialization
+
+                currentBinding.dentistClinicNameTextView.text = dentistProfile.clinicName
+
+                currentBinding.dentistClinicAddressTextView.text = dentistProfile.clinicAddress
+            },
+            onFailure = {
+                showMessage(
+                    "Професионалната информация не може да бъде заредена."
                 )
             }
         )
@@ -167,7 +202,6 @@ class DentistDetailsFragment : Fragment() {
     }
 
     companion object {
-        private const val DENTIST_UID_ARGUMENT =
-            "dentistUid"
+        private const val DENTIST_UID_ARGUMENT = "dentistUid"
     }
 }

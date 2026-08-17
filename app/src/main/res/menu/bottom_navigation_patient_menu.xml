@@ -17,7 +17,7 @@
         android:title="Стоматолози" />
 
     <item
-        android:id="@+id/userProfileFragment"
+        android:id="@+id/patientProfileFragment"
         android:icon="@drawable/navigation_user_icon"
         android:title="Профил" />
 

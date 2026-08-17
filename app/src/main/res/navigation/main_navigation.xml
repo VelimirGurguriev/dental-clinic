@@ -37,8 +37,13 @@
     </fragment>
 
     <fragment
-        android:id="@+id/userProfileFragment"
-        android:name="com.velimir_gurguriev.dentalclinic.fragments.UserProfileFragment"
+        android:id="@+id/patientProfileFragment"
+        android:name="com.velimir_gurguriev.dentalclinic.fragments.PatientProfileFragment"
+        android:label="Профил" />
+
+    <fragment
+        android:id="@+id/dentistProfileFragment"
+        android:name="com.velimir_gurguriev.dentalclinic.fragments.DentistProfileFragment"
         android:label="Профил" />
 
     <fragment

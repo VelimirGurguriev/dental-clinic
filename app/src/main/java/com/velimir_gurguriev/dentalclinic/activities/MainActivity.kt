@@ -47,6 +47,32 @@ class MainActivity : AppCompatActivity() {
                 ) as NavHostFragment
 
         navController = navHostFragment.navController
+        setupToolbarNavigation()
+    }
+
+    private fun setupToolbarNavigation() {
+        navController
+            .addOnDestinationChangedListener {
+                    _,
+                    destination,
+                    _ ->
+
+                val showBackButton =
+                    destination.id == R.id.dentistDetailsFragment
+
+                if (showBackButton) {
+                    binding.topAppBar.setNavigationIcon(
+                        androidx.appcompat.R.drawable.abc_ic_ab_back_material
+                    )
+
+                    binding.topAppBar
+                        .setNavigationOnClickListener {
+                            navController.navigateUp()
+                        }
+                } else {
+                    binding.topAppBar.navigationIcon = null
+                }
+            }
     }
 
     private fun loadBottomNavigationMenu() {
@@ -110,8 +136,7 @@ class MainActivity : AppCompatActivity() {
                     _ ->
 
                 if (
-                    destination.id ==
-                    R.id.dentistDetailsFragment
+                    destination.id == R.id.dentistDetailsFragment
                 ) {
                     binding.bottomNavigation.menu
                         .findItem(

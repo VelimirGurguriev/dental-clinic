@@ -15,7 +15,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginBottom="24dp"
-            android:text="Профил на стоматолог"
+            android:text="Моят профил"
             android:textSize="24sp"
             android:textStyle="bold" />
 
@@ -26,7 +26,7 @@
             android:textStyle="bold" />
 
         <TextView
-            android:id="@+id/dentistNameTextView"
+            android:id="@+id/nameTextView"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginBottom="16dp"
@@ -39,7 +39,7 @@
             android:textStyle="bold" />
 
         <TextView
-            android:id="@+id/dentistEmailTextView"
+            android:id="@+id/emailTextView"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginBottom="16dp"
@@ -52,7 +52,7 @@
             android:textStyle="bold" />
 
         <TextView
-            android:id="@+id/dentistPhoneTextView"
+            android:id="@+id/phoneTextView"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginBottom="16dp"
@@ -65,7 +65,7 @@
             android:textStyle="bold" />
 
         <TextView
-            android:id="@+id/dentistCityTextView"
+            android:id="@+id/cityTextView"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginBottom="24dp"
@@ -86,7 +86,7 @@
             android:textStyle="bold" />
 
         <TextView
-            android:id="@+id/dentistSpecializationTextView"
+            android:id="@+id/specializationTextView"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginBottom="16dp"
@@ -99,7 +99,7 @@
             android:textStyle="bold" />
 
         <TextView
-            android:id="@+id/dentistClinicNameTextView"
+            android:id="@+id/clinicNameTextView"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginBottom="16dp"
@@ -112,17 +112,25 @@
             android:textStyle="bold" />
 
         <TextView
-            android:id="@+id/dentistClinicAddressTextView"
+            android:id="@+id/clinicAddressTextView"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginBottom="24dp"
             android:text="Зарежда се..." />
 
         <Button
-            android:id="@+id/requestPatientButton"
+            android:id="@+id/editProfileButton"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Изпрати заявка за пациент" />
+            android:text="Редактирай профила" />
+
+        <Button
+            android:id="@+id/logoutButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:layout_marginBottom="24dp"
+            android:text="Изход от профила" />
 
     </LinearLayout>
 
