@@ -70,7 +70,28 @@ class PatientRepository {
             }
     }
 
+    fun updatePatientProfile(
+        uid: String,
+        dateOfBirth: Long,
+        onSuccess: () -> Unit,
+        onFailure: (Exception) -> Unit
+    ) {
+        patientsCollection
+            .document(uid)
+            .update(
+                DATE_OF_BIRTH_FIELD,
+                dateOfBirth
+            )
+            .addOnSuccessListener {
+                onSuccess()
+            }
+            .addOnFailureListener { exception ->
+                onFailure(exception)
+            }
+    }
+
     companion object {
         private const val PATIENTS_COLLECTION = "patients"
+        private const val DATE_OF_BIRTH_FIELD = "dateOfBirth"
     }
 }

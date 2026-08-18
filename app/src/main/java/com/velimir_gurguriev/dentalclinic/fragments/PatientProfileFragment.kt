@@ -6,7 +6,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
-import com.velimir_gurguriev.dentalclinic.activities.EditProfileActivity
+import com.velimir_gurguriev.dentalclinic.activities.PatientEditProfileActivity
 import com.velimir_gurguriev.dentalclinic.activities.WelcomeActivity
 import com.velimir_gurguriev.dentalclinic.databinding.FragmentPatientProfileBinding
 import com.velimir_gurguriev.dentalclinic.models.User
@@ -188,7 +188,7 @@ class PatientProfileFragment : Fragment() {
         val intent =
             Intent(
                 requireContext(),
-                EditProfileActivity::class.java
+                PatientEditProfileActivity::class.java
             )
 
         startActivity(

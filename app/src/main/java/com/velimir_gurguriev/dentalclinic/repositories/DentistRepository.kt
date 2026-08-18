@@ -70,7 +70,36 @@ class DentistRepository {
             }
     }
 
+    fun updateDentistProfile(
+        uid: String,
+        specialization: String,
+        clinicName: String,
+        clinicAddress: String,
+        onSuccess: () -> Unit,
+        onFailure: (Exception) -> Unit
+    ) {
+        val updates =
+            mapOf(
+                SPECIALIZATION_FIELD to specialization,
+                CLINIC_NAME_FIELD to clinicName,
+                CLINIC_ADDRESS_FIELD to clinicAddress
+            )
+
+        dentistsCollection
+            .document(uid)
+            .update(updates)
+            .addOnSuccessListener {
+                onSuccess()
+            }
+            .addOnFailureListener { exception ->
+                onFailure(exception)
+            }
+    }
+
     companion object {
         private const val DENTISTS_COLLECTION = "dentists"
+        private const val SPECIALIZATION_FIELD = "specialization"
+        private const val CLINIC_NAME_FIELD = "clinicName"
+        private const val CLINIC_ADDRESS_FIELD = "clinicAddress"
     }
 }

@@ -82,18 +82,24 @@ class UserRepository {
             }
     }
 
-    fun updateUserName(
+    fun updateUserProfile(
         uid: String,
         name: String,
+        phone: String,
+        city: String,
         onSuccess: () -> Unit,
         onFailure: (Exception) -> Unit
     ) {
+        val updates =
+            mapOf(
+                NAME_FIELD to name,
+                PHONE_FIELD to phone,
+                CITY_FIELD to city
+            )
+
         usersCollection
             .document(uid)
-            .update(
-                NAME_FIELD,
-                name
-            )
+            .update(updates)
             .addOnSuccessListener {
                 onSuccess()
             }
@@ -104,11 +110,10 @@ class UserRepository {
 
     companion object {
         private const val USERS_COLLECTION = "users"
-
         private const val ACCOUNT_TYPE_FIELD = "accountType"
-
         private const val NAME_FIELD = "name"
-
+        private const val PHONE_FIELD = "phone"
+        private const val CITY_FIELD = "city"
         private const val DENTIST_ACCOUNT_TYPE = "dentist"
     }
 }
