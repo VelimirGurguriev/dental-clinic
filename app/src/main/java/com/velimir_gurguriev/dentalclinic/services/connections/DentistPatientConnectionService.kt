@@ -8,6 +8,7 @@ import com.velimir_gurguriev.dentalclinic.models.connections.DentistPatientStatu
 import com.velimir_gurguriev.dentalclinic.models.connections.PatientRequestItem
 import com.velimir_gurguriev.dentalclinic.repositories.DentistPatientConnectionRepository
 import com.velimir_gurguriev.dentalclinic.repositories.UserRepository
+import com.velimir_gurguriev.dentalclinic.models.User
 
 class DentistPatientConnectionService(
     private val connectionRepository: DentistPatientConnectionRepository,
@@ -223,6 +224,63 @@ class DentistPatientConnectionService(
                     .continueWith { itemsTask ->
                         itemsTask.result.filterNotNull()
                     }
+            }
+    }
+
+    fun getApprovedDentistsForPatient(
+        patientId: String
+    ): Task<List<User>> {
+
+        if (patientId.isBlank()) {
+            return Tasks.forException(
+                IllegalArgumentException(
+                    "Липсва ID на пациента."
+                )
+            )
+        }
+
+        return connectionRepository
+            .getApprovedDentistsForPatient(patientId)
+            .continueWithTask { task ->
+
+                if (!task.isSuccessful) {
+                    throw task.exception
+                        ?: IllegalStateException(
+                            "Неуспешно зареждане на стоматолозите."
+                        )
+                }
+
+                val dentistIds = task.result.documents
+                    .mapNotNull { document ->
+                        document.getString("dentistId")
+                    }
+                    .distinct()
+
+                val dentistTasks = dentistIds.map { dentistId ->
+
+                    val result = TaskCompletionSource<User?>()
+
+                    userRepository.getUserById(
+                        uid = dentistId,
+                        onSuccess = { dentist ->
+                            result.setResult(dentist)
+                        },
+                        onFailure = {
+                            result.setResult(null)
+                        }
+                    )
+
+                    result.task
+                }
+
+                if (dentistTasks.isEmpty()) {
+                    Tasks.forResult(emptyList<User>())
+                } else {
+                    Tasks.whenAllSuccess<User?>(dentistTasks)
+                        .continueWith { dentistsTask ->
+                            dentistsTask.result.filterNotNull()
+                        }
+                }
             }
     }
 

@@ -157,7 +157,7 @@ class AppointmentService(
             endDateTime = endDateTime
         )
 
-        return appointmentRepository.createAppointmentSlot(
+        return appointmentRepository.createAppointmentSlotIfAbsent(
             appointmentSlot
         )
     }
@@ -277,6 +277,82 @@ class AppointmentService(
                 Tasks.whenAll(creationTasks)
             }
         }
+    }
+
+    fun requestAppointment(
+        appointmentId: String,
+        dentistId: String,
+        patientId: String
+    ): Task<Void> {
+
+        if (appointmentId.isBlank()) {
+            return createFailedTask(
+                "Не е избран час."
+            )
+        }
+
+        if (dentistId.isBlank() || patientId.isBlank()) {
+            return createFailedTask(
+                "Невалидни данни за пациента или стоматолога."
+            )
+        }
+
+        return appointmentRepository.requestAppointment(
+            appointmentId = appointmentId,
+            dentistId = dentistId,
+            patientId = patientId
+        )
+    }
+
+    fun getPendingAppointmentsForDentist(
+        dentistId: String
+    ): Task<List<AppointmentSlot>> {
+
+        if (dentistId.isBlank()) {
+            return Tasks.forException(
+                IllegalArgumentException(
+                    "Липсва идентификатор на стоматолога."
+                )
+            )
+        }
+
+        return appointmentRepository.getPendingAppointmentsForDentist(
+            dentistId
+        )
+    }
+
+    fun approveAppointment(
+        appointmentId: String,
+        dentistId: String
+    ): Task<Void> {
+
+        if (appointmentId.isBlank() || dentistId.isBlank()) {
+            return createFailedTask(
+                "Невалидни данни за заявката."
+            )
+        }
+
+        return appointmentRepository.approveAppointment(
+            appointmentId,
+            dentistId
+        )
+    }
+
+    fun rejectAppointment(
+        appointmentId: String,
+        dentistId: String
+    ): Task<Void> {
+
+        if (appointmentId.isBlank() || dentistId.isBlank()) {
+            return createFailedTask(
+                "Невалидни данни за заявката."
+            )
+        }
+
+        return appointmentRepository.rejectAppointment(
+            appointmentId,
+            dentistId
+        )
     }
 
     private fun createFailedTask(

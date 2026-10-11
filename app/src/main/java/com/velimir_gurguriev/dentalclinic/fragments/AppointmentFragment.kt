@@ -21,6 +21,7 @@ import com.velimir_gurguriev.dentalclinic.utils.appointments.AppointmentDateUtil
 import com.velimir_gurguriev.dentalclinic.utils.appointments.TimeSlotGenerator
 import com.velimir_gurguriev.dentalclinic.utils.ui.SnackbarUtils
 import java.util.Calendar
+import androidx.navigation.fragment.findNavController
 
 class AppointmentFragment : Fragment() {
 
@@ -62,6 +63,12 @@ class AppointmentFragment : Fragment() {
         setupRecyclerView()
         setupCalendar()
         setupClickListeners()
+
+        binding.viewAppointmentRequestsButton.setOnClickListener {
+            findNavController().navigate(
+                R.id.action_appointmentFragment_to_dentistAppointmentRequestsFragment
+            )
+        }
     }
 
     override fun onDestroyView() {

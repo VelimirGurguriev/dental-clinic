@@ -9,10 +9,27 @@
         android:name="com.velimir_gurguriev.dentalclinic.fragments.HomeFragment"
         android:label="Начало" />
 
+
     <fragment
         android:id="@+id/appointmentFragment"
         android:name="com.velimir_gurguriev.dentalclinic.fragments.AppointmentFragment"
-        android:label="Часове" />
+        android:label="Часове">
+
+        <action
+            android:id="@+id/action_appointmentFragment_to_dentistAppointmentRequestsFragment"
+            app:destination="@id/dentistAppointmentRequestsFragment" />
+
+    </fragment>
+
+    <fragment
+        android:id="@+id/dentistAppointmentRequestsFragment"
+        android:name="com.velimir_gurguriev.dentalclinic.fragments.DentistAppointmentRequestsFragment"
+        android:label="Заявки за часове" />
+
+    <fragment
+        android:id="@+id/patientAppointmentFragment"
+        android:name="com.velimir_gurguriev.dentalclinic.fragments.PatientAppointmentFragment"
+        android:label="Запазване на час" />
 
     <fragment
         android:id="@+id/dentistFragment"

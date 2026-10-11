@@ -28,8 +28,8 @@ class TimeSlotAdapter(
             )
 
             when {
-                timeSlot.appointmentStatus ==
-                        AppointmentStatus.BOOKED -> {
+                timeSlot.appointmentStatus == AppointmentStatus.BOOKED ||
+                        timeSlot.appointmentStatus == AppointmentStatus.PENDING -> {
 
                     binding.timeSlotButton.isEnabled = false
                     binding.timeSlotButton.isChecked = false

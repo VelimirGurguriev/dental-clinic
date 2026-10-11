@@ -7,7 +7,7 @@
         android:title="Начало" />
 
     <item
-        android:id="@+id/appointmentFragment"
+        android:id="@+id/patientAppointmentFragment"
         android:icon="@drawable/navigation_appointment_icon"
         android:title="Часове" />
 
