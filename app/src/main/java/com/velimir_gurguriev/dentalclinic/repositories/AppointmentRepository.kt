@@ -16,6 +16,65 @@ class AppointmentRepository {
             APPOINTMENT_SLOTS_COLLECTION
         )
 
+    fun createAppointmentSlotIfAbsent(
+        appointmentSlot: AppointmentSlot
+    ): Task<Void> {
+
+        val documentId =
+            "${appointmentSlot.dentistId}_${appointmentSlot.startDateTime}"
+
+        val documentReference =
+            appointmentSlotsCollection.document(documentId)
+
+        return firestore.runTransaction { transaction ->
+
+            val snapshot = transaction.get(documentReference)
+
+            if (!snapshot.exists()) {
+                transaction.set(
+                    documentReference,
+                    appointmentSlot.copy(id = documentId)
+                )
+            }
+
+            null
+        }
+    }
+
+    fun getDentistSlotsForPeriod(
+        dentistId: String,
+        startDateTime: Long,
+        endDateTime: Long
+    ): Task<List<AppointmentSlot>> {
+
+        return appointmentSlotsCollection
+            .whereEqualTo(DENTIST_ID_FIELD, dentistId)
+            .whereGreaterThanOrEqualTo(
+                START_DATE_TIME_FIELD,
+                startDateTime
+            )
+            .whereLessThan(
+                START_DATE_TIME_FIELD,
+                endDateTime
+            )
+            .get()
+            .continueWith { task ->
+
+                if (!task.isSuccessful) {
+                    throw task.exception
+                        ?: Exception(
+                            "Неуспешно зареждане на часовете."
+                        )
+                }
+
+                task.result.documents.mapNotNull { document ->
+                    document.toObject(
+                        AppointmentSlot::class.java
+                    )?.copy(id = document.id)
+                }
+            }
+    }
+
     fun createAppointmentSlot(
         appointmentSlot: AppointmentSlot
     ): Task<Void> {

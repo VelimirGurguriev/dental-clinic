@@ -226,7 +226,82 @@ class AppointmentFragment : Fragment() {
             .setOnClickListener {
                 timeSlotAdapter.clearSelection()
             }
+
+        binding.publishOneMonthButton.setOnClickListener {
+            confirmBulkPublishing(1)
+        }
+
+        binding.publishTwoMonthsButton.setOnClickListener {
+            confirmBulkPublishing(2)
+        }
+
     }
+
+
+    private fun confirmBulkPublishing(monthsAhead: Int) {
+        AlertDialog.Builder(requireContext())
+            .setTitle("Публикуване на часове")
+            .setMessage(
+                "Искате ли да публикувате свободните часове " +
+                        "за следващите $monthsAhead " +
+                        if (monthsAhead == 1) "месец?" else "месеца?"
+            )
+            .setPositiveButton("Публикувай") { _, _ ->
+                publishAppointmentSlots(monthsAhead)
+            }
+            .setNegativeButton("Отказ", null)
+            .show()
+    }
+
+    private fun publishAppointmentSlots(monthsAhead: Int) {
+        val dentistId = getCurrentDentistId() ?: return
+
+        setBulkPublishingLoadingState(true)
+
+        appointmentService.publishAppointmentSlotsForMonths(
+            dentistId = dentistId,
+            monthsAhead = monthsAhead
+        )
+            .addOnSuccessListener {
+                if (_binding == null) {
+                    return@addOnSuccessListener
+                }
+
+                setBulkPublishingLoadingState(false)
+                timeSlotAdapter.clearSelection()
+                loadPublishedSlots()
+
+                showMessage("Часовете са публикувани успешно.")
+            }
+            .addOnFailureListener { exception ->
+                if (_binding == null) {
+                    return@addOnFailureListener
+                }
+
+                setBulkPublishingLoadingState(false)
+
+                showMessage(
+                    exception.message
+                        ?: "Грешка при публикуване на часовете."
+                )
+            }
+    }
+
+    private fun setBulkPublishingLoadingState(isLoading: Boolean) {
+        setAppointmentControlsEnabled(!isLoading)
+
+        binding.publishOneMonthButton.isEnabled = !isLoading
+        binding.publishTwoMonthsButton.isEnabled = !isLoading
+
+        binding.publishOneMonthButton.text =
+            if (isLoading) "Публикуване..."
+            else "Публикувай 1 месец"
+
+        binding.publishTwoMonthsButton.text =
+            if (isLoading) "Публикуване..."
+            else "Публикувай 2 месеца"
+    }
+
 
     private fun loadPublishedSlots() {
         val dentistId = getCurrentDentistId() ?: return
@@ -365,16 +440,17 @@ class AppointmentFragment : Fragment() {
             "Избрана дата: $formattedDate"
     }
 
+
     private fun setAppointmentControlsEnabled(
         isEnabled: Boolean
     ) {
         binding.createAppointmentSlotsButton.isEnabled = isEnabled
-
         binding.removeAppointmentSlotButton.isEnabled = isEnabled
-
         binding.selectAllSlotsButton.isEnabled = isEnabled
-
         binding.deselectAllSlotsButton.isEnabled = isEnabled
+
+        binding.publishOneMonthButton.isEnabled = isEnabled
+        binding.publishTwoMonthsButton.isEnabled = isEnabled
     }
 
     private fun setCreationLoadingState(

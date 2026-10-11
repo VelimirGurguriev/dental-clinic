@@ -6,6 +6,8 @@ import com.velimir_gurguriev.dentalclinic.models.appointments.AppointmentSlot
 import com.velimir_gurguriev.dentalclinic.models.appointments.TimeSlotItem
 import com.velimir_gurguriev.dentalclinic.repositories.AppointmentRepository
 import com.velimir_gurguriev.dentalclinic.utils.appointments.AppointmentDateUtils
+import java.util.Calendar
+import com.velimir_gurguriev.dentalclinic.utils.appointments.TimeSlotGenerator
 
 class AppointmentService(
     private val appointmentRepository: AppointmentRepository
@@ -158,6 +160,123 @@ class AppointmentService(
         return appointmentRepository.createAppointmentSlot(
             appointmentSlot
         )
+    }
+
+    fun publishAppointmentSlotsForMonths(
+        dentistId: String,
+        monthsAhead: Int
+    ): Task<Void> {
+
+        if (dentistId.isBlank()) {
+            return createFailedTask(
+                "Липсва идентификатор на стоматолога."
+            )
+        }
+
+        if (monthsAhead !in 1..2) {
+            return createFailedTask(
+                "Можете да публикувате за 1 или 2 месеца."
+            )
+        }
+
+        val today = Calendar.getInstance().apply {
+            set(Calendar.HOUR_OF_DAY, 0)
+            set(Calendar.MINUTE, 0)
+            set(Calendar.SECOND, 0)
+            set(Calendar.MILLISECOND, 0)
+        }
+
+        val endDate = (today.clone() as Calendar).apply {
+            add(Calendar.MONTH, monthsAhead)
+        }
+
+        val now = System.currentTimeMillis()
+
+        return appointmentRepository.getDentistSlotsForPeriod(
+            dentistId = dentistId,
+            startDateTime = today.timeInMillis,
+            endDateTime = endDate.timeInMillis
+        ).continueWithTask { task ->
+
+            if (!task.isSuccessful) {
+                throw task.exception
+                    ?: Exception(
+                        "Неуспешно зареждане на часовете."
+                    )
+            }
+
+            val existingSlots = task.result
+                .map { it.startDateTime }
+                .toHashSet()
+
+            val timeSlots = TimeSlotGenerator.generate(
+                startHour = 8,
+                endHour = 16
+            )
+
+            val creationTasks = mutableListOf<Task<Void>>()
+
+            val currentDate = today.clone() as Calendar
+
+            while (currentDate.before(endDate)) {
+
+                val dayOfWeek = currentDate.get(
+                    Calendar.DAY_OF_WEEK
+                )
+
+                if (
+                    dayOfWeek != Calendar.SATURDAY &&
+                    dayOfWeek != Calendar.SUNDAY
+                ) {
+
+                    val selectedDate = currentDate.timeInMillis
+
+                    timeSlots.forEach { slot ->
+
+                        val startDateTime =
+                            AppointmentDateUtils.createDateTime(
+                                date = selectedDate,
+                                hour = slot.startHour,
+                                minute = slot.startMinute
+                            )
+
+                        if (
+                            startDateTime > now &&
+                            startDateTime !in existingSlots
+                        ) {
+
+                            val endDateTime =
+                                AppointmentDateUtils.createDateTime(
+                                    date = selectedDate,
+                                    hour = slot.endHour,
+                                    minute = slot.endMinute
+                                )
+
+                            val appointmentSlot = AppointmentSlot(
+                                dentistId = dentistId,
+                                startDateTime = startDateTime,
+                                endDateTime = endDateTime
+                            )
+
+                            creationTasks.add(
+                                appointmentRepository
+                                    .createAppointmentSlotIfAbsent(
+                                        appointmentSlot
+                                    )
+                            )
+                        }
+                    }
+                }
+
+                currentDate.add(Calendar.DAY_OF_MONTH, 1)
+            }
+
+            if (creationTasks.isEmpty()) {
+                Tasks.forResult(null)
+            } else {
+                Tasks.whenAll(creationTasks)
+            }
+        }
     }
 
     private fun createFailedTask(

@@ -31,6 +31,30 @@
             app:anotherMonthsDaysLabelsColor="@color/calendar_other_month_days" />
 
         <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:layout_marginBottom="8dp"
+            android:text="Автоматично публикуване"
+            android:textSize="16sp"
+            android:textStyle="bold" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/publishOneMonthButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Публикувай 1 месец"
+            app:cornerRadius="8dp" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/publishTwoMonthsButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"
+            android:text="Публикувай 2 месеца"
+            app:cornerRadius="8dp" />
+
+        <TextView
             android:id="@+id/selectedDateTextView"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
