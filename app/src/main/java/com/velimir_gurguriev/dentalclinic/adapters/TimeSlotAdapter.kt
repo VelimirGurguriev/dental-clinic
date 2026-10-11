@@ -14,7 +14,8 @@ import com.velimir_gurguriev.dentalclinic.utils.appointments.TimeSlotAppointment
 import java.util.Locale
 
 class TimeSlotAdapter(
-    private val timeSlots: List<TimeSlotItem>
+    private val timeSlots: List<TimeSlotItem>,
+    private val onAppointmentClick: (String) -> Unit
 ) : RecyclerView.Adapter<TimeSlotAdapter.TimeSlotViewHolder>() {
 
     inner class TimeSlotViewHolder(
@@ -31,12 +32,10 @@ class TimeSlotAdapter(
                 timeSlot.appointmentStatus == AppointmentStatus.BOOKED ||
                         timeSlot.appointmentStatus == AppointmentStatus.PENDING -> {
 
-                    binding.timeSlotButton.isEnabled = false
+                    binding.timeSlotButton.isEnabled = true
                     binding.timeSlotButton.isChecked = false
 
-                    setButtonColor(
-                        R.color.slot_booked
-                    )
+                    setButtonColor(R.color.slot_booked)
                 }
 
                 timeSlot.appointmentStatus ==
@@ -96,7 +95,15 @@ class TimeSlotAdapter(
                         timeSlot.isSelected = false
                     }
 
-                    AppointmentStatus.BOOKED -> {
+                    AppointmentStatus.BOOKED,
+                    AppointmentStatus.PENDING -> {
+
+                        val appointmentId = timeSlot.appointmentId
+
+                        if (!appointmentId.isNullOrBlank()) {
+                            onAppointmentClick(appointmentId)
+                        }
+
                         return@setOnClickListener
                     }
 

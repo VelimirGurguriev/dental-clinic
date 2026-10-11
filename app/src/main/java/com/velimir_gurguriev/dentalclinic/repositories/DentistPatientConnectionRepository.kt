@@ -38,7 +38,30 @@ class DentistPatientConnectionRepository(
             RESPONDED_AT_FIELD to null
         )
 
-        return connectionsCollection.add(connectionData)
+        val documentId = getConnectionDocumentId(
+            patientId = patientId,
+            dentistId = dentistId
+        )
+
+        val documentReference =
+            connectionsCollection.document(documentId)
+
+        return firestore.runTransaction { transaction ->
+            val snapshot = transaction.get(documentReference)
+
+            if (snapshot.exists()) {
+                throw IllegalStateException(
+                    "Вече съществува заявка или връзка с този стоматолог."
+                )
+            }
+
+            transaction.set(
+                documentReference,
+                connectionData
+            )
+
+            documentReference
+        }
     }
 
     fun getPendingRequestsForDentist(
@@ -108,6 +131,14 @@ class DentistPatientConnectionRepository(
         return connectionsCollection
             .document(connectionId)
             .update(updates)
+    }
+
+
+    private fun getConnectionDocumentId(
+        patientId: String,
+        dentistId: String
+    ): String {
+        return "${dentistId}_${patientId}"
     }
 
     companion object {

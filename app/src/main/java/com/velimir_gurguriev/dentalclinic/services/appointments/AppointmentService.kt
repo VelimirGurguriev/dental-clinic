@@ -355,6 +355,23 @@ class AppointmentService(
         )
     }
 
+    fun getAppointmentById(
+        appointmentId: String
+    ): Task<AppointmentSlot> {
+
+        if (appointmentId.isBlank()) {
+            return Tasks.forException(
+                IllegalArgumentException(
+                    "Липсва идентификатор на часа."
+                )
+            )
+        }
+
+        return appointmentRepository.getAppointmentById(
+            appointmentId
+        )
+    }
+
     private fun createFailedTask(
         message: String
     ): Task<Void> {

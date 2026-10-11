@@ -22,6 +22,8 @@ import com.velimir_gurguriev.dentalclinic.utils.appointments.TimeSlotGenerator
 import com.velimir_gurguriev.dentalclinic.utils.ui.SnackbarUtils
 import java.util.Calendar
 import androidx.navigation.fragment.findNavController
+import androidx.core.os.bundleOf
+import androidx.navigation.fragment.findNavController
 
 class AppointmentFragment : Fragment() {
 
@@ -97,7 +99,12 @@ class AppointmentFragment : Fragment() {
             endHour = END_WORKING_HOUR
         )
 
-        timeSlotAdapter = TimeSlotAdapter(timeSlots)
+        timeSlotAdapter = TimeSlotAdapter(
+            timeSlots = timeSlots,
+            onAppointmentClick = { appointmentId ->
+                openAppointmentDetails(appointmentId)
+            }
+        )
 
         binding.appointmentSlotsRecyclerView.layoutManager =
             GridLayoutManager(
@@ -107,6 +114,15 @@ class AppointmentFragment : Fragment() {
 
         binding.appointmentSlotsRecyclerView.adapter =
             timeSlotAdapter
+    }
+
+    private fun openAppointmentDetails(
+        appointmentId: String
+    ) {
+        findNavController().navigate(
+            R.id.action_appointmentFragment_to_appointmentDetailsFragment,
+            bundleOf("appointmentId" to appointmentId)
+        )
     }
 
     private fun setupCalendar() {

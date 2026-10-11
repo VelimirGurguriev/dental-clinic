@@ -19,6 +19,9 @@
             android:id="@+id/action_appointmentFragment_to_dentistAppointmentRequestsFragment"
             app:destination="@id/dentistAppointmentRequestsFragment" />
 
+        <action
+            android:id="@+id/action_appointmentFragment_to_appointmentDetailsFragment"
+            app:destination="@id/appointmentDetailsFragment" />
     </fragment>
 
     <fragment
@@ -67,5 +70,15 @@
         android:id="@+id/patientRequestsFragment"
         android:name="com.velimir_gurguriev.dentalclinic.fragments.DentistPatientsFragment"
         android:label="Заявки" />
+
+    <fragment
+        android:id="@+id/appointmentDetailsFragment"
+        android:name="com.velimir_gurguriev.dentalclinic.fragments.AppointmentDetailsFragment"
+        android:label="Детайли за часа">
+
+        <argument
+            android:name="appointmentId"
+            app:argType="string" />
+    </fragment>
 
 </navigation>

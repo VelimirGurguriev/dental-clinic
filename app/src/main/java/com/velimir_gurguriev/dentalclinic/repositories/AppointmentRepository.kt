@@ -352,6 +352,32 @@ class AppointmentRepository {
         }
     }
 
+    fun getAppointmentById(
+        appointmentId: String
+    ): Task<AppointmentSlot> {
+
+        return appointmentSlotsCollection
+            .document(appointmentId)
+            .get()
+            .continueWith { task ->
+
+                if (!task.isSuccessful) {
+                    throw task.exception
+                        ?: IllegalStateException(
+                            "Неуспешно зареждане на часа."
+                        )
+                }
+
+                val document = task.result
+
+                document.toObject(AppointmentSlot::class.java)
+                    ?.copy(id = document.id)
+                    ?: throw IllegalStateException(
+                        "Часът не е намерен."
+                    )
+            }
+    }
+
     companion object {
 
         private const val APPOINTMENT_SLOTS_COLLECTION =
