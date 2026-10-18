@@ -25,7 +25,8 @@ import java.util.Calendar
 import com.velimir_gurguriev.dentalclinic.R
 import com.velimir_gurguriev.dentalclinic.utils.appointments.AppointmentCalendarDecorator
 import androidx.appcompat.app.AlertDialog
-
+import androidx.core.os.bundleOf
+import androidx.navigation.fragment.findNavController
 
 
 class PatientAppointmentFragment : Fragment() {
@@ -45,6 +46,9 @@ class PatientAppointmentFragment : Fragment() {
     private lateinit var connectionService: DentistPatientConnectionService
 
     private var selectedDentist: User? = null
+
+    private var restoredDentistId: String? = null
+    private var restoredDate: Long? = null
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -66,6 +70,17 @@ class PatientAppointmentFragment : Fragment() {
         savedInstanceState: Bundle?
     ) {
         super.onViewCreated(view, savedInstanceState)
+
+        restoredDentistId =
+            savedInstanceState?.getString(KEY_SELECTED_DENTIST_ID)
+                ?: selectedDentist?.uid
+
+        restoredDate =
+            if (savedInstanceState?.containsKey(KEY_SELECTED_DATE) == true) {
+                savedInstanceState.getLong(KEY_SELECTED_DATE)
+            } else {
+                selectedDate.takeIf { it != 0L }
+            }
 
         authRepository = AuthRepository()
 
@@ -147,12 +162,12 @@ class PatientAppointmentFragment : Fragment() {
 
                 binding.requestAppointmentButton.text = "Заяви час"
 
+
                 selectedAppointment = null
                 loadDentistAppointments()
 
-                showMessage(
-                    "Заявката за час е изпратена успешно."
-                )
+                openAppointmentDetails(appointmentId)
+
             }
             .addOnFailureListener { exception ->
                 if (_binding == null) {
@@ -172,12 +187,21 @@ class PatientAppointmentFragment : Fragment() {
 
 
     private fun setupTimeSlots() {
-        patientTimeSlotAdapter = PatientTimeSlotAdapter { appointment ->
-            selectedAppointment = appointment
 
-            binding.requestAppointmentButton.isEnabled =
-                appointment != null
-        }
+        val patientId = authRepository.getCurrentUserId().orEmpty()
+
+        patientTimeSlotAdapter = PatientTimeSlotAdapter(
+            currentPatientId = patientId,
+            onAppointmentClick = { appointmentId ->
+                openAppointmentDetails(appointmentId)
+            },
+            onSelectionChanged = { appointment ->
+                selectedAppointment = appointment
+
+                binding.requestAppointmentButton.isEnabled =
+                    appointment != null
+            }
+        )
 
         binding.patientSlotsRecyclerView.layoutManager =
             GridLayoutManager(requireContext(), 3)
@@ -189,11 +213,15 @@ class PatientAppointmentFragment : Fragment() {
     private fun setupCalendar() {
         val today = AppointmentDateUtils.getToday()
 
-        selectedDate = today.timeInMillis
+        selectedDate = restoredDate ?: today.timeInMillis
+
+        val displayedDate = Calendar.getInstance().apply {
+            timeInMillis = selectedDate
+        }
 
         binding.patientAppointmentCalendarView.apply {
             setMinimumDate(today)
-            setDate(today)
+            setDate(displayedDate)
 
             setSelectionBackground(
                 R.drawable.calendar_selected_day
@@ -226,6 +254,15 @@ class PatientAppointmentFragment : Fragment() {
                 }
             }
         )
+    }
+
+    private fun updateAppointmentContentVisibility() {
+        binding.appointmentContentLayout.visibility =
+            if (selectedDentist != null) {
+                View.VISIBLE
+            } else {
+                View.GONE
+            }
     }
 
     private fun updateWeekendState() {
@@ -325,7 +362,9 @@ class PatientAppointmentFragment : Fragment() {
     private fun setupDentistDropdown(dentists: List<User>) {
         val currentBinding = _binding ?: return
 
-        selectedDentist = null
+        selectedDentist = dentists.find { dentist ->
+            dentist.uid == restoredDentistId
+        }
 
         val dentistNames = dentists.map { dentist ->
             dentist.name
@@ -339,12 +378,21 @@ class PatientAppointmentFragment : Fragment() {
 
         currentBinding.dentistDropdown.setAdapter(adapter)
 
-        currentBinding.dentistDropdown.setText("", false)
+        currentBinding.dentistDropdown.setText(
+            selectedDentist?.name.orEmpty(),
+            false
+        )
 
         currentBinding.dentistDropdown.setOnItemClickListener {
                 _, _, position, _ ->
 
             selectedDentist = dentists[position]
+
+            updateAppointmentContentVisibility()
+            loadDentistAppointments()
+        }
+
+        if (selectedDentist != null) {
             loadDentistAppointments()
         }
 
@@ -354,6 +402,46 @@ class PatientAppointmentFragment : Fragment() {
         } else {
             currentBinding.dentistDropdownLayout.helperText = null
         }
+
+        updateAppointmentContentVisibility()
+    }
+
+    override fun onResume() {
+        super.onResume()
+
+        if (
+            _binding != null &&
+            ::patientTimeSlotAdapter.isInitialized &&
+            selectedDentist != null
+        ) {
+            loadDentistAppointments()
+        }
+    }
+
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+
+        outState.putLong(
+            KEY_SELECTED_DATE,
+            selectedDate
+        )
+
+        selectedDentist?.uid?.let { dentistId ->
+            outState.putString(
+                KEY_SELECTED_DENTIST_ID,
+                dentistId
+            )
+        }
+    }
+
+    private fun openAppointmentDetails(
+        appointmentId: String
+    ) {
+        findNavController().navigate(
+            R.id.action_patientAppointmentFragment_to_appointmentDetailsFragment,
+            bundleOf("appointmentId" to appointmentId)
+        )
     }
 
     override fun onDestroyView() {
@@ -369,5 +457,10 @@ class PatientAppointmentFragment : Fragment() {
             rootView = currentBinding.root,
             message = message
         )
+    }
+
+    companion object {
+        private const val KEY_SELECTED_DATE = "selectedDate"
+        private const val KEY_SELECTED_DENTIST_ID = "selectedDentistId"
     }
 }

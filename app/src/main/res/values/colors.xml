@@ -16,4 +16,5 @@
     <color name="patient_slot_pending">#E6A23C</color>
     <color name="patient_slot_text">#FFFFFF</color>
     <color name="patient_slot_disabled_text">#37474F</color>
+    <color name="patient_slot_booked">#3769A8</color>
 </resources>

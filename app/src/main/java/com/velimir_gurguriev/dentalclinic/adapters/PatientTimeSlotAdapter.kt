@@ -14,7 +14,10 @@ import androidx.core.content.ContextCompat
 import com.velimir_gurguriev.dentalclinic.R
 import java.util.Locale
 
+
 class PatientTimeSlotAdapter(
+    private val currentPatientId: String,
+    private val onAppointmentClick: (String) -> Unit,
     private val onSelectionChanged: (AppointmentSlot?) -> Unit
 ) : RecyclerView.Adapter<PatientTimeSlotAdapter.ViewHolder>() {
 
@@ -34,6 +37,16 @@ class PatientTimeSlotAdapter(
 
             val appointment = appointments[startTime]
 
+            val isOwnAppointment =
+                appointment?.patientId == currentPatientId
+
+            val canViewAppointment =
+                isOwnAppointment &&
+                        (
+                            appointment?.status == AppointmentStatus.PENDING.name ||
+                            appointment?.status == AppointmentStatus.BOOKED.name
+                        )
+
             val isAvailable =
                 appointment?.status == AppointmentStatus.AVAILABLE.name &&
                         startTime > System.currentTimeMillis()
@@ -42,11 +55,10 @@ class PatientTimeSlotAdapter(
                 Locale.getDefault(), "%02d:%02d", hour, minute
             )
 
-            binding.timeSlotButton.isEnabled = isAvailable
+            binding.timeSlotButton.isEnabled =
+                isAvailable || canViewAppointment
             binding.timeSlotButton.isChecked =
-                appointment?.id == selectedAppointment?.id &&
-                        isAvailable
-
+                appointment?.id == selectedAppointment?.id && isAvailable
 
             val slotColor = when {
                 isAvailable &&
@@ -56,12 +68,18 @@ class PatientTimeSlotAdapter(
                 isAvailable ->
                     R.color.patient_slot_available
 
-                appointment?.status == "PENDING" ->
+                canViewAppointment &&
+                        appointment?.status == AppointmentStatus.PENDING.name ->
                     R.color.patient_slot_pending
+
+                canViewAppointment &&
+                        appointment?.status == AppointmentStatus.BOOKED.name ->
+                    R.color.patient_slot_booked
 
                 else ->
                     R.color.patient_slot_unavailable
             }
+
 
             val textColor =
                 if (slotColor == R.color.patient_slot_unavailable) {
@@ -87,20 +105,29 @@ class PatientTimeSlotAdapter(
 
 
             binding.timeSlotButton.setOnClickListener {
-                if (!isAvailable || appointment == null) {
+                val currentAppointment = appointment
+                    ?: return@setOnClickListener
+
+                if (canViewAppointment) {
+                    onAppointmentClick(currentAppointment.id)
+                    return@setOnClickListener
+                }
+
+                if (!isAvailable) {
                     return@setOnClickListener
                 }
 
                 selectedAppointment =
-                    if (selectedAppointment?.id == appointment.id) {
+                    if (selectedAppointment?.id == currentAppointment.id) {
                         null
                     } else {
-                        appointment
+                        currentAppointment
                     }
 
                 notifyDataSetChanged()
                 onSelectionChanged(selectedAppointment)
             }
+
         }
     }
 

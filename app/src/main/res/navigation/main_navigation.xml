@@ -32,7 +32,13 @@
     <fragment
         android:id="@+id/patientAppointmentFragment"
         android:name="com.velimir_gurguriev.dentalclinic.fragments.PatientAppointmentFragment"
-        android:label="Запазване на час" />
+        android:label="Запазване на час">
+
+        <action
+            android:id="@+id/action_patientAppointmentFragment_to_appointmentDetailsFragment"
+            app:destination="@id/appointmentDetailsFragment" />
+
+    </fragment>
 
     <fragment
         android:id="@+id/dentistFragment"
